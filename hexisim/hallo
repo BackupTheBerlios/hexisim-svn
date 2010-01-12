@@ -10,3 +10,9 @@ ja, is die aktuelle version
 
 cool jetz muss i nur mehr kompiliern k√∂nnen und du auch gleichzeitig dann passts...
 vlt. sollten wir nur die sourcefiles versionieren, dann gibts keine Probleme mit de Architekturen. was meinst ...
+
+---
+
+ja, ich denk das is ganz sinnvoll (und wird was ich bis jetzt gesehen hab auch sonst so gemacht), den nbproject-ordner beizubehalten wär trotzdem nicht schlecht, und natürlich die libraries
+naja, ich lösch halt dann den rest wenn ich die nächste programmversion drauflade (oder du...)
+PS: die umlaute in diesem  text kannst du dank meines coolen betriebssystems jetzt sicher nicht mehr lesen^^
