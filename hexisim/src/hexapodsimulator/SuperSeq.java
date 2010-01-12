@@ -4,7 +4,9 @@
 package hexapodsimulator;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.Serializable;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,12 +15,12 @@ import java.util.logging.Logger;
  *
  * @author gerhard
  */
-public class SuperSeq {
+public class SuperSeq implements Serializable {
 
     /**
      * Beinhaltet eine Sequenz, genannt hexiSequenz, und eine Position (zeitlich), pos
      */
-    class SeqAtPos {
+    class SeqAtPos implements Serializable {
 
         public SeqAtPos(HexiSequenz hexiSequenz) {
             this.hexiSequenz = hexiSequenz;
@@ -40,11 +42,6 @@ public class SuperSeq {
         for (int i = 0; i < angles.capacity(); i++) {
             angles.add(new Vector<SeqAtPos>());
         }
-
-        angles2 = new Vector<Vector<SeqAtPos>>(12);
-        for (int i = 0; i < angles2.capacity(); i++) {
-            angles2.add(new Vector<SeqAtPos>());
-        }
     }
 
     /**
@@ -57,24 +54,29 @@ public class SuperSeq {
     public void addSeq(HexiSequenz hexiSequenz, int pos, int leg, int ebene) {
         int N = (leg * 2) + ebene;    //von 0-5 und 0/1 auf 0-11
         for (int i = 0; i < angles.elementAt(N).size(); i++) {
-            if (pos > angles.elementAt(N).elementAt(i).pos) {
+            if (pos < angles.elementAt(N).elementAt(i).pos) {
                 angles.elementAt(N).add(i, new SeqAtPos(hexiSequenz, pos));
+                angles2 = null;
                 return;
             }
         }
         angles.elementAt(N).add(new SeqAtPos(hexiSequenz, pos));
+        angles2 = null;
     }
 
     public void delSeq(String name) throws Exception {
         boolean deleted = false;
         for (int N = 0; N < 11; N++) {
+            Vector elementsToDelete = new Vector();
             for (int i = 0; i < angles.elementAt(N).size(); i++) {
                 if (name.equals(angles.elementAt(N).elementAt(i).hexiSequenz.getName())) {
-                    angles.elementAt(N).remove(i);
+                    elementsToDelete.add(angles.elementAt(N).elementAt(i));
                     deleted = true;
                 }
             }
+            angles.elementAt(N).removeAll(elementsToDelete);
         }
+        angles2 = null;
         if (!deleted) {
             throw new Exception("No exisiting leg with specified name.");
         }
@@ -90,6 +92,7 @@ public class SuperSeq {
         for (int i = 0; i < angles.elementAt(N).size(); i++) {
             if (pos == angles.elementAt(N).elementAt(i).pos) {
                 angles.elementAt(N).remove(i);
+                angles2 = null;
                 return;
             }
         }
@@ -114,7 +117,7 @@ public class SuperSeq {
         gesCnt = gesLen / stepTime;     //Gesamtanzahl der Schritte
         //Gesamtzeit bekannt, jetzt kommt die Hauptschleife, welche jeden Punkt einzeln durchläuft
 
-
+        angles2 = new Vector<Vector<SeqAtPos>>(12);
         angles2.clear();
         for (int i = 0; i < 12; i++) {
             angles2.add(new Vector<SeqAtPos>());
@@ -156,11 +159,11 @@ public class SuperSeq {
      */
     public double getSingleElementAtTime(int time, int leg, int angle) {
         if (getSeqCnt(leg, (angle == 0) ? 1 : 0) < 1) {
-            return 0.;
+            return angle == 0 ? 0. : 45.;//�0
         }
         if (time < getTimePosOfSeq(leg, (angle == 0) ? 1 : 0, 0)) {
             if (interpolate == 0) {
-                return 0.;
+                return angle == 0 ? 0. : 45.;//�0
             } else if (interpolate == 1) {
                 //TO-DO interpolieren // Update - sollte gehen, testen
                 return interpolate(0.,
@@ -192,31 +195,30 @@ public class SuperSeq {
                                 benSeq.getAngle(benSeq.getLength() - 1)[(angle == 0) ? 0 : angle - 1],
                                 getLegAngle(leg, i, 0, angle),
                                 //(((time - benPos) / benSeq.getTime()) * benSeq.getLength())
-                                ((double)time - (double)(benPos + benSeq.getTime())) /
-                                (double)(angles.elementAt(leg * 2 + ((angle == 0) ? 1 : 0)).elementAt(i).pos -
-                                (benPos + benSeq.getTime())));
-                    }                    
+                                ((double) time - (double) (benPos + benSeq.getTime()))
+                                / (double) (angles.elementAt(leg * 2 + ((angle == 0) ? 1 : 0)).elementAt(i).pos
+                                - (benPos + benSeq.getTime())));
+                    }
                 } else {    //gesuchte Zeit befindet sich innerhalb der Sequenz
                     //return benSeq.getAngle((int) (((double) time - benPos / (double) benSeq.getTime()) *
                     //        benSeq.getLength()))[(angle != 0) ? angle - 1 : 0];
                     try {
                         if (interpolate == 0) {
                             return getLegAngle(leg, i - 1,
-                                    ((int) ((((double)time - (double)benPos) / (double)benSeq.getTime()) * (double)benSeq.getLength())), angle);
+                                    ((int) ((((double) time - (double) benPos) / (double) benSeq.getTime()) * (double) benSeq.getLength())), angle);
                         } else if (interpolate == 1) {
                             try {
-                            return interpolate(
-                                    getLegAngle(leg, i - 1,
-                                        ((int) Math.floor(((double)(time - benPos) / (double)benSeq.getTime()) * benSeq.getLength())), angle),
-                                    getLegAngle(leg, i - 1,
-                                        ((int) Math.ceil(((double)(time - benPos) / (double)benSeq.getTime()) * benSeq.getLength()))<benSeq.getLength() /*TODO*/? ((int) Math.ceil(((double)(time - benPos) / (double)benSeq.getTime()) * benSeq.getLength())) : benSeq.getLength()-1/*TODO*/
-                                        , angle),
-                                    (((double)(time - benPos) / (double)benSeq.getTime()) * (double)benSeq.getLength()) -
-                                        Math.floor((((double)(time - benPos) / benSeq.getTime()) * benSeq.getLength())));
+                                return interpolate(
+                                        getLegAngle(leg, i - 1,
+                                        ((int) Math.floor(((double) (time - benPos) / (double) benSeq.getTime()) * benSeq.getLength())), angle),
+                                        getLegAngle(leg, i - 1,
+                                        ((int) Math.ceil(((double) (time - benPos) / (double) benSeq.getTime()) * benSeq.getLength())) < benSeq.getLength() /*TODO*/ ? ((int) Math.ceil(((double) (time - benPos) / (double) benSeq.getTime()) * benSeq.getLength())) : benSeq.getLength() - 1/*TODO*/, angle),
+                                        (((double) (time - benPos) / (double) benSeq.getTime()) * (double) benSeq.getLength())
+                                        - Math.floor((((double) (time - benPos) / benSeq.getTime()) * benSeq.getLength())));
                             } catch (Exception e) {
-                                System.out.println("µµµµµµµµµµµµµµ\n"+e);
-                                System.out.println(Math.floor(((double)(time - benPos) / (double)benSeq.getTime()) * benSeq.getLength()));
-                                System.out.println(((int) Math.ceil(((double)(time - benPos) / (double)benSeq.getTime()) * benSeq.getLength()))<benSeq.getLength() /*TODO*/? ((int) Math.ceil(((double)(time - benPos) / (double)benSeq.getTime()) * benSeq.getLength())) : benSeq.getLength()/*TODO*/);
+                                System.out.println("µµµµµµµµµµµµµµ\n" + e);
+                                System.out.println(Math.floor(((double) (time - benPos) / (double) benSeq.getTime()) * benSeq.getLength()));
+                                System.out.println(((int) Math.ceil(((double) (time - benPos) / (double) benSeq.getTime()) * benSeq.getLength())) < benSeq.getLength() /*TODO*/ ? ((int) Math.ceil(((double) (time - benPos) / (double) benSeq.getTime()) * benSeq.getLength())) : benSeq.getLength()/*TODO*/);
                                 System.out.println("µµµµµµµµµµµµµµ");
                             }
                         }
@@ -254,15 +256,15 @@ public class SuperSeq {
         }
         if (seq < 0 || seq >= angles.elementAt(leg * 2 + ((angle == 0) ? 1 : 0)).size()) {
             throw new IllegalArgumentException(
-                    "No Sequence " + seq + " at leg/angle " + leg + "/" + angle +
-                    " – must be < " + angles.elementAt(leg * 2 + ((angle == 0) ? 1 : 0)).size());
+                    "No Sequence " + seq + " at leg/angle " + leg + "/" + angle
+                    + " – must be < " + angles.elementAt(leg * 2 + ((angle == 0) ? 1 : 0)).size());
         }
-        if (seqPos < 0 ||
-                seqPos >= angles.elementAt(leg * 2 + ((angle == 0) ? 1 : 0)).
+        if (seqPos < 0
+                || seqPos >= angles.elementAt(leg * 2 + ((angle == 0) ? 1 : 0)).
                 elementAt(seq).hexiSequenz.getLength()) {
             throw new IllegalArgumentException(
-                    "No seqPos " + seqPos + " at Sequence " + seq + " at leg/angle " + leg + "/" + angle +
-                    " – must be < " + angles.elementAt(leg * 2 + ((angle == 0) ? 1 : 0)).
+                    "No seqPos " + seqPos + " at Sequence " + seq + " at leg/angle " + leg + "/" + angle
+                    + " – must be < " + angles.elementAt(leg * 2 + ((angle == 0) ? 1 : 0)).
                     elementAt(seq).hexiSequenz.getLength());
         }
         return angles.elementAt(leg * 2 + ((angle == 0) ? 1 : 0)).
@@ -297,8 +299,8 @@ public class SuperSeq {
     public HexiSequenz getSeq(int leg, int dim, int seq) throws IllegalArgumentException {
         if (seq < 0 || seq >= getSeqCnt(leg, dim)) {
             throw new IllegalArgumentException(
-                    "No Sequence " + seq + " at leg/dim " + leg + "/" + dim +
-                    " – there are " + getSeqCnt(leg, dim) + " Seqs.");
+                    "No Sequence " + seq + " at leg/dim " + leg + "/" + dim
+                    + " – there are " + getSeqCnt(leg, dim) + " Seqs.");
         }
         return angles.elementAt(leg * 2 + dim).elementAt(seq).hexiSequenz;
     }
@@ -350,31 +352,30 @@ public class SuperSeq {
      * @param filename Filename
      * @throws Exception Problems ie with File-Access, Memory-Allocation, ...
      */
-    public void angletofile(String filename) throws Exception {
-        if (this.angles2.firstElement().size() == 0) {
-            try {
-                toSteps(20);
-            } catch (Exception ex) {
-                System.out.println(ex);
-                throw ex;
-            }
+    public void angletofile(File file) throws Exception {
+        if (angles2 == null) {
+            toSteps(20);
         }
-        FileOutputStream fs = new FileOutputStream(filename);
+        FileOutputStream fs = new FileOutputStream(file);
         DataOutputStream ds = new DataOutputStream(fs);
 
-        ds.writeByte((byte) 0);
-        for (int i = 0; i <
-                angles2.firstElement().firstElement().hexiSequenz.getLength(); i++) {
+        //ds.writeByte((byte) 0);
+        for (int i = 0; i
+                < angles2.firstElement().firstElement().hexiSequenz.getLength(); i++) {
             for (int j = 0; j < 6; j++) {
-                ds.writeShort((int) (angles2.get(j * 2 + 1).firstElement().hexiSequenz.getAngle(i)[0] * 4096. / 360.));
-                ds.writeShort((int) (angles2.get(j * 2).firstElement().hexiSequenz.getAngle(i)[0] * 4096. / 360.));
-                ds.writeShort((int) (angles2.get(j * 2).firstElement().hexiSequenz.getAngle(i)[1] * 4096. / 360.));
-                if(j == 2 || j==4){
+                ds.writeShort((int) (Math.toRadians(-angles2.get(j * 2 + 1).firstElement().hexiSequenz.getAngle(i)[0]) * 1024 + 2145));
+                ds.writeShort((int) (Math.toRadians(-angles2.get(j * 2).firstElement().hexiSequenz.getAngle(i)[0]) * 1024 + 2680));
+                ds.writeShort((int) (Math.toRadians(angles2.get(j * 2).firstElement().hexiSequenz.getAngle(i)[1]) * 1024 + 1609));
+                if (j == 1 || j == 3) {
                     ds.write(new byte[6]);
                 }
             }
         }
-        ds.writeByte(0xff);
+        //ds.writeByte(0xff);
         fs.close();
+    }
+
+    public void angletofile(String filename) throws Exception {
+        angletofile(new File(filename));
     }
 }

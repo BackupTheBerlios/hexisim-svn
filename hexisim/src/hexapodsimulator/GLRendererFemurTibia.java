@@ -1,12 +1,13 @@
 package hexapodsimulator;
 
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLJPanel;
 import javax.media.opengl.glu.GLU;
+import javax.swing.JLabel;
 
 /**
  * GLRenderer.java <BR>
@@ -14,40 +15,66 @@ import javax.media.opengl.glu.GLU;
  *
  * This version is equal to Brian Paul's version 1.2 1999/10/21
  */
-public class GLRendererFemurTibia implements GLEventListener, MouseMotionListener {
+public class GLRendererFemurTibia extends MouseAdapter implements GLEventListener {
 
-    public void mouseDragged(MouseEvent e) {
-        GLJPanel glpanel = (GLJPanel) e.getSource();
-        //double[] angle = new double[2];
-        double x1, x3, y1, y3;
+    private static boolean kneeUp;
+    private static boolean currentKneeUp;
 
-        System.out.println(e.getX()+ " "+e.getY());
-
-        x3 = (double) e.getX() / glpanel.getWidth() * 2;
-        y3 = (double) e.getY() / glpanel.getHeight() * 2;
-
-        x1 = 0.1;
-        y1 = 0.1;
-/*
-        x2 = x1 + (x3 - x1) / 2 + Math.sqrt((b * b - Math.pow((x1 + (x3 - x1) / 2) - x1, 2.0) - Math.pow((y3 - y1) / 2, 2.0)) / 2.0);
-        y2 = y1 + Math.sqrt(b * b - Math.pow(x2 - x1, 2.0));
-
-        angle[0] = Math.toDegrees(Math.atan((y2 - y1) / (x2 - x1)));
-        angle[1] = Math.toDegrees(Math.atan((y3 - y2) / (x3 - x2))) - angle[0];
-*/
-        //angle[0] = 90 - Math.toDegrees( Math.atan( (x3-x1) / (y3-y1) ) ) - Math.toDegrees( Math.acos( Math.hypot(x3-x1, y3-y1) / (2 * b)  )  ) ;
-        //angle[1] = 2 * Math.toDegrees( Math.acos( Math.hypot(x3-x1, y3-y1) / (2 * b)  ) );
-
-        angle[0] = 90 - Math.toDegrees(Math.atan( (x3-x1) / (y3-y1) ) ) - Math.toDegrees(Math.acos( ( b1*b1-b2*b2+(Math.pow(x3-x1,2)+Math.pow(y3-y1,2)) ) / ( 2*b1*Math.hypot(x3-x1,y3-y1) ) ) );
-        angle[1] = Math.toDegrees(Math.acos( ( b1*b1-b2*b2+(Math.pow(x3-x1,2)+Math.pow(y3-y1,2)) ) / ( 2*b1*Math.hypot(x3-x1,y3-y1) ) )) + Math.toDegrees(Math.acos( ( b2*b2-b1*b1+(Math.pow(x3-x1,2)+Math.pow(y3-y1,2)) ) / ( 2*b2*Math.hypot(x3-x1,y3-y1) ) ) );
-
-        if(Math.hypot(x3-x1, y3-y1) >= (b1+b2)) { // Mouse position is out of range
-            angle[0] = 90 - Math.toDegrees( Math.atan( (x3-x1) / (y3-y1) ) );
-            angle[1] = 0;
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        GLJPanel glPanel = (GLJPanel) e.getSource();
+        if (e.getButton() == MouseEvent.BUTTON3) {
+            kneeUp = !kneeUp;
+            if (glPanel.getComponent(0).getName().equals("kneeMode")) {
+                JLabel label = (JLabel) glPanel.getComponent(0);
+                label.setText(kneeUp ? "Knee up" : "Knee down");
+            }
         }
     }
 
-    public void mouseMoved(MouseEvent e) {
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        GLJPanel glPanel = (GLJPanel) e.getSource();
+        double xStart, x3, yStart, y3;
+
+        x3 = (double) e.getX() / glPanel.getWidth() * 2;
+        y3 = (double) e.getY() / glPanel.getHeight() * 2;
+
+        xStart = 0.8;
+        yStart = 1;
+
+        double[] oldAngle = angle.clone();
+
+        double angleIntermediateResult1 = Math.acos((b1 * b1 - b2 * b2 + (Math.pow(x3 - xStart, 2) + Math.pow(y3 - yStart, 2))) / (2 * b1 * Math.hypot(x3 - xStart, y3 - yStart)));
+        double angleIntermediateResult2 = Math.acos((b2 * b2 - b1 * b1 + (Math.pow(x3 - xStart, 2) + Math.pow(y3 - yStart, 2))) / (2 * b2 * Math.hypot(x3 - xStart, y3 - yStart)));
+        if (currentKneeUp && !Double.isNaN(angleIntermediateResult1) && !Double.isNaN(angleIntermediateResult2)) {
+            angle[0] = 90 - Math.toDegrees(Math.atan((x3 - xStart) / (y3 - yStart))) - Math.toDegrees(angleIntermediateResult1);
+            angle[1] = Math.toDegrees(angleIntermediateResult1) + Math.toDegrees(angleIntermediateResult2);
+        
+        //TODO: calculate the right angles for knee down - mode
+        } else if (!currentKneeUp && !Double.isNaN(angleIntermediateResult1) && !Double.isNaN(angleIntermediateResult2)) {
+            angle[0] = - 90 - Math.toDegrees(Math.atan((x3 - xStart) / (y3 - yStart))) - Math.toDegrees(angleIntermediateResult1);
+            angle[1] = - Math.toDegrees(angleIntermediateResult1) + Math.toDegrees(angleIntermediateResult2);
+        }
+
+        if (Math.hypot(x3 - xStart, y3 - yStart) >= (b1 + b2)) { // Mouse position is out of range
+            angle[0] = 90 - Math.toDegrees(Math.atan((x3 - xStart) / (y3 - yStart)));
+            angle[1] = 0;
+            if (currentKneeUp != kneeUp) {
+                currentKneeUp = kneeUp;
+            }
+        }
+
+        double[] anglePwmValue = new double[3];
+        anglePwmValue[0] = Math.toRadians(-angle[0])*1024 + 2145;
+        anglePwmValue[1] = Math.toRadians(-angle[1])*1024 + 2680;
+        /*if (angle[0] < (-72.9 + 30) || angle[0] > (93.3 + 30)) {*/ if(anglePwmValue[0] > 3277 || anglePwmValue[0] < 306) {
+            angle[0] = oldAngle[0];
+        }
+        /*if (angle[1] < (-90 + 59.9) || angle[1] > (83.9 + 59.9)) {*/ if(anglePwmValue[1] > 3109 || anglePwmValue[1] < 0) {
+            angle[1] = oldAngle[1];
+        }
+        //System.out.println((Math.toRadians(angle[0]) * 1024 + 2145) + ", " + (Math.toRadians(angle[1]) * 1024 + 2680));
     }
 
     public void init(GLAutoDrawable drawable) {
@@ -67,8 +94,9 @@ public class GLRendererFemurTibia implements GLEventListener, MouseMotionListene
         for (int i = 0; i < 2; i++) {
             angle[i] = 45;
         }
-        b1 = 0.624;
-        b2 = 1.176;
+        b1 = 0.624 / 1.8;
+        b2 = 1.176 / 1.8;
+        currentKneeUp = kneeUp = true;
     }
 
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
@@ -104,8 +132,9 @@ public class GLRendererFemurTibia implements GLEventListener, MouseMotionListene
 
         gl.glBegin(GL.GL_LINE_STRIP);
         gl.glColor3f(1.0f, 1.0f, 1.0f);
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 3; i++) {
             gl.glVertex2d(joint[i][0], joint[i][1]);
+        }
         gl.glEnd();
 
         // Flush all drawing operations to the graphics card
@@ -118,12 +147,11 @@ public class GLRendererFemurTibia implements GLEventListener, MouseMotionListene
     public static double b1, b2;
 
     public void update2dLocs(double[][] joint) {
-        joint[0][0] = 0.1;
-        joint[0][1] = -0.1;
+        joint[0][0] = 0.8;
+        joint[0][1] = -1;
         joint[1][0] = joint[0][0] + b1 * Math.cos(Math.toRadians(angle[0]));
         joint[1][1] = joint[0][1] - b1 * Math.sin(Math.toRadians(angle[0]));
         joint[2][0] = joint[1][0] + b2 * Math.cos(Math.toRadians(angle[0] + angle[1]));
         joint[2][1] = joint[1][1] - b2 * Math.sin(Math.toRadians(angle[0] + angle[1]));
     }
 }
-

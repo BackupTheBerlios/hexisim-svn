@@ -50,12 +50,44 @@ public class ModelCreator {
 
     /**
      * Returns the interval with the chosen row and index from the vector
-     * @param row The row of the interval
+     * @param row The row to search for the interval
      * @param index The index of the interval
      * @return The selected interval
      */
     public static EventInterval getInterval(int row, int index) {
         return intervals.elementAt(row).elementAt(index);
+    }
+
+    /**
+     * Returns the interval that is active at the specified date.
+     * This means that the specified date needs not to be the start date of the required interval.
+     * @param row The row to search for the interval
+     * @param date The date that the interval should contain
+     * @return The required interval or null if no interval matches
+     */
+    public static EventInterval getIntervalAtDate(int row, JaretDate date) {
+        EventInterval searchInterval = new EventInterval(date, date);
+        for (int i = 0; i < intervals.elementAt(row).size(); i++) {
+            if(intervals.elementAt(row).elementAt(i).intersects(searchInterval))
+                return intervals.elementAt(row).elementAt(i);
+        }
+        return null;
+    }
+
+    /**
+     * Returns a Vector containing all intervals
+     * @return intervals Interval vector: consists of 13 vectors that contain the intervals of each row
+     */
+    public static Vector<Vector<EventInterval>> getIntervals() {
+        return intervals;
+    }
+
+    /**
+     * Sets the interval vector
+     * @param intervals Interval vector: consists of 13 vectors that contain the intervals of each row
+     */
+    public static void setIntervals(Vector<Vector<EventInterval>> intervals) {
+        ModelCreator.intervals = intervals;
     }
 
     /**
@@ -66,6 +98,31 @@ public class ModelCreator {
      */
     public static void remInterval(int row, int index) {
         intervals.elementAt(row).remove(index);
+    }
+
+    /**
+     * Removes all intervals with the specified name
+     * @param name The name of the intervals that should be removed
+     */
+    public static void remInterval(String name) {
+        for (int i = 0; i < intervals.size(); i++) {
+            Vector<EventInterval> elementsToDelete = new Vector<EventInterval>();
+            for (int j = 0; j < intervals.elementAt(i).size(); j++) {
+                if (intervals.elementAt(i).elementAt(j).getTitle().equals(name)) {
+                    elementsToDelete.add(intervals.elementAt(i).elementAt(j));
+                }
+            }
+            intervals.elementAt(i).removeAll(elementsToDelete);
+        }
+    }
+
+    /**
+     * Removes all intervals
+     */
+    public static void clear() {
+        for (int i = 0; i < intervals.size(); i++) {
+            intervals.elementAt(i).clear();
+        }
     }
 
     /**
@@ -96,8 +153,8 @@ public class ModelCreator {
             return -1;
         }
         for (int i = 0; i < intervals.elementAt(row).size(); i++) {
-            if (intervals.elementAt(row).elementAt(i).getBegin().getDate().getTime() <= date.getDate().getTime() &&
-                    intervals.elementAt(row).elementAt(i).getEnd().getDate().getTime() >= date.getDate().getTime()) {
+            if (intervals.elementAt(row).elementAt(i).getBegin().getDate().getTime() <= date.getDate().getTime()
+                    && intervals.elementAt(row).elementAt(i).getEnd().getDate().getTime() >= date.getDate().getTime()) {
                 return i;
             }
         }

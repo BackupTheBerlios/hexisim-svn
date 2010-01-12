@@ -72,8 +72,6 @@ public class HexiSequenz implements Serializable {
         return time;
     }
 
-    
-
     public HexiSequenz(int time, double angle1, double angle2) {
         this.time = time;
         angle = new Vector();
@@ -104,8 +102,8 @@ public class HexiSequenz implements Serializable {
         if (ValueCount == 2) {
             angle.addElement((double[]) new double[]{angle1, angle2});
         } else {
-            throw new IllegalStateException("Object is initialised to " + ValueCount +
-                    " Values per position.");
+            throw new IllegalStateException("Object is initialised to " + ValueCount
+                    + " Values per position.");
         }
     }
 
@@ -121,8 +119,8 @@ public class HexiSequenz implements Serializable {
         if (ValueCount == angles.length) {
             angle.add(angles);
         } else {
-            throw new IllegalStateException("Object is initialised to " + ValueCount +
-                    " Values per position.");
+            throw new IllegalStateException("Object is initialised to " + ValueCount
+                    + " Values per position.");
         }
     }
 
@@ -137,9 +135,80 @@ public class HexiSequenz implements Serializable {
         if (ValueCount == 1) {
             angle.add((double[]) (new double[]{anglee}));
         } else {
-            throw new IllegalStateException("Object is initialised to " + ValueCount +
-                    " Values per position.");
+            throw new IllegalStateException("Object is initialised to " + ValueCount
+                    + " Values per position.");
         }
+    }
+
+    /**
+     * Removes repeated values from the vector
+     * and trims the capacity of the vector to its size.
+     */
+    public void clean() {
+        Vector<double[]> cleanedAngles = new Vector<double[]>();
+        if (ValueCount == 1) {
+            for (int i = 0; i < (angle.size() - 1); i++) {
+                if (angle.elementAt(i)[0] != angle.elementAt(i + 1)[0]) {
+                    cleanedAngles.add(angle.elementAt(i));
+                }
+            }
+        } else if (ValueCount == 2) {
+            for (int i = 0; i < (angle.size() - 1); i++) {
+                if (angle.elementAt(i)[0] != angle.elementAt(i + 1)[0]
+                        || angle.elementAt(i)[1] != angle.elementAt(i + 1)[1]) {
+                    cleanedAngles.add(angle.elementAt(i));
+                }
+            }
+        }
+        angle = cleanedAngles;
+        angle.trimToSize();
+    }
+
+    public void normalize() {
+        Vector<double[]> normalizedAngles = new Vector<double[]>();
+        if (ValueCount == 1) {
+            boolean rising = false;
+            double[] prevAngle = new double[1];
+            for (int i = 0; i < (angle.size() - 1); i++) {
+                prevAngle = angle.elementAt(i);
+                if (i == 0
+                        || rising && angle.elementAt(i + 1)[0] < (prevAngle[0] - 3)
+                        || !rising && angle.elementAt(i + 1)[0] > (prevAngle[0] + 3)) {
+                    normalizedAngles.add(prevAngle);
+                }
+                if(rising && angle.elementAt(i+1)[0] < (prevAngle[0]-3))
+                    rising = false;
+                else if(!rising && angle.elementAt(i+1)[0] > (prevAngle[0]+3))
+                    rising = true;
+            }
+            normalizedAngles.add(angle.lastElement());
+        } else if (ValueCount == 2) {
+            boolean[] rising = new boolean[2];
+            double[] prevAngle = new double[2];
+            for (int i = 0; i < (angle.size() - 1); i++) {
+                prevAngle = angle.elementAt(i);
+                if (i == 0
+                        || rising[0] && angle.elementAt(i + 1)[0] < (prevAngle[0] - 3)
+                        || !rising[0] && angle.elementAt(i + 1)[0] > (prevAngle[0] + 3)
+                        || rising[1] && angle.elementAt(i + 1)[1] < (prevAngle[1] - 3)
+                        || !rising[1] && angle.elementAt(i + 1)[1] > (prevAngle[1] + 3)) {
+                    normalizedAngles.add(prevAngle);
+                }
+                if(rising[0] && angle.elementAt(i+1)[0] < (prevAngle[0]-3))
+                    rising[0] = false;
+                else if(!rising[0] && angle.elementAt(i+1)[0] > (prevAngle[0]+3)
+                        || !rising[0] && i==1 && angle.elementAt(i+1)[0] > prevAngle[0])
+                    rising[0] = true;
+                if(rising[1] && angle.elementAt(i+1)[1] < (prevAngle[1]-3))
+                    rising[1] = false;
+                else if(!rising[1] && angle.elementAt(i+1)[1] > (prevAngle[1]+3)
+                        || !rising[1] && i==1 && angle.elementAt(i+1)[1] > prevAngle[1])
+                    rising[1] = true;
+            }
+            normalizedAngles.add(angle.lastElement());
+        }
+        angle = normalizedAngles;
+        angle.trimToSize();
     }
 
     @Override
@@ -198,8 +267,8 @@ public class HexiSequenz implements Serializable {
         double[] temp;
         double tmp;
         for (int i = 0; i < V.capacity(); i++) {
-            
-                tmp = 0;
+
+            tmp = 0;
             //V.addElement(new double[angle.firstElement().length]);
             temp = new double[ValueCount];
             for (int j = 0; j < angle.firstElement().length; j++) {
@@ -207,18 +276,18 @@ public class HexiSequenz implements Serializable {
                 for (int k = 0; k < angle.size() - 1; k++) {
                     tmp -= Math.abs(angle.elementAt(k)[j] - angle.elementAt(k + 1)[j]);
                     /*if (temp[j] > 0) {
-                        temp[j] -= Math.abs(angle.elementAt(k)[j] - angle.elementAt(k + 1)[j]);
+                    temp[j] -= Math.abs(angle.elementAt(k)[j] - angle.elementAt(k + 1)[j]);
                     } else {
-                        if (tmp < 0) {
-                            temp[j] *= -1;
-                        }
-                        temp[j] += angle.elementAt(k)[j];
-                        break;
+                    if (tmp < 0) {
+                    temp[j] *= -1;
+                    }
+                    temp[j] += angle.elementAt(k)[j];
+                    break;
                     }
                      */
-                    if (tmp > 0)
+                    if (tmp > 0) {
                         temp[j] += angle.elementAt(k)[j] - angle.elementAt(k + 1)[j];
-                    else{
+                    } else {
                         //temp[j] += gesLen[j] * ((double) i / (double) V.capacity());
                     }
 
@@ -268,28 +337,28 @@ public class HexiSequenz implements Serializable {
     static public double[] toCoords(double[] angles, int leg) {
         return toCoords(angles, leg, 30, 4, 4);
     }
-/*
+    /*
     public static void main(String args[]) {
-        HexiSequenz a = new HexiSequenz();
-        a.setTime(50);
-        a.addContent(123, 13);
-        a.addContent(53, 4521);
-        a.addContent(55, 6423);
-        //System.out.println(a);
-        HexiSequenz b = new HexiSequenz();
-        b.addContent(123);
-        b.addContent(345);
-        b.addContent(4);
-        b.addContent(32);
-        b.addContent(45);
-        b.addContent(78);
-        b.setTime(100);
-        HexiSequenz c = new HexiSequenz(b.toAngleSteps(10));
+    HexiSequenz a = new HexiSequenz();
+    a.setTime(50);
+    a.addContent(123, 13);
+    a.addContent(53, 4521);
+    a.addContent(55, 6423);
+    //System.out.println(a);
+    HexiSequenz b = new HexiSequenz();
+    b.addContent(123);
+    b.addContent(345);
+    b.addContent(4);
+    b.addContent(32);
+    b.addContent(45);
+    b.addContent(78);
+    b.setTime(100);
+    HexiSequenz c = new HexiSequenz(b.toAngleSteps(10));
 
-        //Test der Point3d (einfach) -- ok, wohl doch ned
-        Point3d p = new Point3d();
+    //Test der Point3d (einfach) -- ok, wohl doch ned
+    Point3d p = new Point3d();
 
-        System.out.println(b);
-        System.out.println(c);
+    System.out.println(b);
+    System.out.println(c);
     }*/
 }

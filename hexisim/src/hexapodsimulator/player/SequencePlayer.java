@@ -72,8 +72,7 @@ public class SequencePlayer extends Timer {
 
                 double[] tempAngle = new double[3];
                 for (int k = 0; k < tempAngle.length; k++) {
-                    if((tempAngle[k] = _superSeq.getSingleElementAtTime(time + i * interval, leg, k) ) == 0)
-                        tempAngle[k] = 45;
+                    tempAngle[k] = _superSeq.getSingleElementAtTime(time + i * interval, leg, k);
                 }
                 final double[] angle = tempAngle;
 

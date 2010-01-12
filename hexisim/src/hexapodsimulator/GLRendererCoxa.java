@@ -17,19 +17,24 @@ import javax.media.opengl.glu.GLU;
 public class GLRendererCoxa implements GLEventListener, MouseMotionListener {
 
     public void mouseDragged(MouseEvent e) {
-        GLJPanel glpanel = (GLJPanel)e.getSource();
+        GLJPanel glpanel = (GLJPanel) e.getSource();
         double mx = (double) e.getX() / glpanel.getWidth() * 2 - 1;
         double my = (double) e.getY() / glpanel.getHeight() * 2;
 
         double b = GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0]));
         b += GLRendererFemurTibia.b2 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0] + GLRendererFemurTibia.angle[1]));
 
-        double bx = b * Math.cos(Math.toRadians(135-angle));
-        double by = 0.1 + b * Math.sin(Math.toRadians(135-angle));
+        double bx = b * Math.cos(Math.toRadians(90 - angle));
+        double by = 0.1 + b * Math.sin(Math.toRadians(90 - angle));
 
-        if(Math.abs(mx-bx)<0.1 && Math.abs(my-by)<0.1 && !Double.isNaN(Math.acos(mx/b))) {
-            angle = 135 - Math.toDegrees(Math.acos(mx/b));
+        if (Math.abs(mx - bx) < 0.2 && Math.abs(my - by) < 0.2 && !Double.isNaN(Math.acos(mx / b))) {
+            angle = 90 - Math.toDegrees(Math.acos(mx / b));
             glpanel.repaint();
+        }
+        System.out.println(angle);
+
+        if (angle < -45 || angle > 45) {    // angle is out of range
+            angle = angle > 0 ? 45 : -45;
         }
     }
 
@@ -50,7 +55,7 @@ public class GLRendererCoxa implements GLEventListener, MouseMotionListener {
         gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         gl.glShadeModel(GL.GL_SMOOTH); // try setting this to GL_FLAT and see what happens.
 
-        angle = 45;
+        angle = 0;
     }
 
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
@@ -99,12 +104,12 @@ public class GLRendererCoxa implements GLEventListener, MouseMotionListener {
     public static double angle;
 
     public void update2dLocs(double[][] joint) {
-        double b = GLRendererFemurTibia.b1* Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0]));
+        double b = GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0]));
         b += GLRendererFemurTibia.b2 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0] + GLRendererFemurTibia.angle[1]));
         joint[0][0] = 1.0;
         joint[0][1] = -0.1;
-        joint[1][0] = joint[0][0] + b * Math.cos(Math.toRadians(135-angle));
-        joint[1][1] = joint[0][1] - b * Math.sin(Math.toRadians(135-angle));
+        joint[1][0] = joint[0][0] + b * Math.cos(Math.toRadians(90 - angle));
+        joint[1][1] = joint[0][1] - b * Math.sin(Math.toRadians(90 - angle));
     }
 }
 

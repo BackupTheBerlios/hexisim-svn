@@ -122,15 +122,15 @@ public class GLRenderer3dModel implements GLEventListener {
             /*angle[i][0] = 0;
             angle[i][1] = 45;
             angle[i][2] = 45;*/
-            joint[i][1][0] = joint[i][0][0] + (/*r*/b1 * Math.cos(Math.toRadians(angle[i][1]))) * Math.cos(((i * 2 * Math.PI) / 6) + Math.toRadians(angle[i][0]-45));
-            joint[i][1][1] = joint[i][0][1] + (/*r*/b1 * Math.cos(Math.toRadians(angle[i][1]))) * Math.sin(((i * 2 * Math.PI) / 6) + Math.toRadians(angle[i][0]-45));
+            joint[i][1][0] = joint[i][0][0] + (/*r*/b1 * Math.cos(Math.toRadians(angle[i][1]))) * Math.cos(((i * 2 * Math.PI) / 6) + Math.toRadians(angle[i][0]));
+            joint[i][1][1] = joint[i][0][1] + (/*r*/b1 * Math.cos(Math.toRadians(angle[i][1]))) * Math.sin(((i * 2 * Math.PI) / 6) + Math.toRadians(angle[i][0]));
             joint[i][1][2] = joint[i][0][2] + b1 * java.lang.Math.sin(Math.toRadians(angle[i][1]));
         }
 
         for (int i = 0; i < 6; i++) //unfertig: es fehlen die neuen Winkel; UPDATE: fertig
         {
-            joint[i][2][0] = joint[i][1][0] + (/*r*/b2 * Math.cos(Math.toRadians(angle[i][1] + angle[i][2])) /*/r*/) * Math.cos(((i * 2 * Math.PI) / 6) + Math.toRadians(angle[i][0]-45));
-            joint[i][2][1] = joint[i][1][1] + (/*r*/b2 * Math.cos(Math.toRadians(angle[i][1] + angle[i][2])) /*/r*/) * Math.sin(((i * 2 * Math.PI) / 6) + Math.toRadians(angle[i][0]-45));
+            joint[i][2][0] = joint[i][1][0] + (/*r*/b2 * Math.cos(Math.toRadians(angle[i][1] + angle[i][2])) /*/r*/) * Math.cos(((i * 2 * Math.PI) / 6) + Math.toRadians(angle[i][0]));
+            joint[i][2][1] = joint[i][1][1] + (/*r*/b2 * Math.cos(Math.toRadians(angle[i][1] + angle[i][2])) /*/r*/) * Math.sin(((i * 2 * Math.PI) / 6) + Math.toRadians(angle[i][0]));
             joint[i][2][2] = joint[i][1][2] + b2 * Math.sin(Math.toRadians(angle[i][1] + angle[i][2])); //erl.
         }
     }

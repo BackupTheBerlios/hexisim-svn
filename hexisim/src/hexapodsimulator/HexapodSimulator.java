@@ -16,6 +16,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Frame;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -27,30 +28,49 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.TimerTask;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLJPanel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
+import javax.swing.KeyStroke;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -75,32 +95,63 @@ import org.jdesktop.layout.LayoutStyle;
  */
 public class HexapodSimulator extends JFrame {
 
+    private HexapodSimulatorProperties properties;
     private Animator animator;
     private ActionListener updater;
     private Timer timer;
     private HexiSequenz ftSequence, cSequence;
     private Vector<HexiSequenz> sequenceVector;
     private SuperSeq superSeq;
-    //private AdvancedPlayer advancedPlayer;
-    private File musicFile;
+    private InputStream musicInputStream;
     private MusicPlayer musicPlayer;
     private SequencePlayer sequencePlayer;
     private java.util.Timer timeBarMarkerTimer;
     private java.util.Timer previewTimer;
+    private boolean projectChanged;
 
     /** Creates new form MainFrame */
     public HexapodSimulator() {
         initComponents();
         setTitle("Hexapod Simulator");
 
+        properties = new HexapodSimulatorProperties();
+        try {
+            ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("properties.dat"));
+            properties = (HexapodSimulatorProperties) objectInputStream.readObject();
+            objectInputStream.close();
+        } catch (FileNotFoundException ex) {
+            ObjectOutputStream objectOutputStream;
+            try {
+                objectOutputStream = new ObjectOutputStream(new FileOutputStream("properties.dat"));
+                objectOutputStream.writeObject(properties);
+            } catch (FileNotFoundException ex1) {
+            } catch (IOException ex1) {
+            }
+        } catch (IOException ex) {
+            System.out.println("IO Exception while reading properties file.");
+        } catch (ClassNotFoundException ex) {
+            System.out.println("Class HexapodSimulatorProperties not found.");
+        }
+        normalizeInputCheckBoxMenuItem.setState(properties.normalizeInput);
+        interpolateOutputCheckBoxMenuItem.setState(properties.interpolateOutput);
+
         panel3dModel.addGLEventListener(new GLRenderer3dModel());
         animator = new Animator(panel3dModel);
 
         panelFemurTibia.addGLEventListener(new GLRendererFemurTibia());
+        panelFemurTibia.addMouseListener(new GLRendererFemurTibia());
         panelFemurTibia.addMouseMotionListener(new GLRendererFemurTibia());
 
         panelCoxa.addGLEventListener(new GLRendererCoxa());
         panelCoxa.addMouseMotionListener(new GLRendererCoxa());
+
+        /*addKeyListener(new KeyAdapter() {
+
+        @Override
+        public void keyPressed(KeyEvent ke) {
+        System.out.println("a");
+        }
+        });*/
 
         updater = new ActionListener() {
 
@@ -110,32 +161,32 @@ public class HexapodSimulator extends JFrame {
                 panelCoxa.repaint();
 
                 if (ftCaptureButton.isSelected()) {
-                    //System.out.println(ftSequence.getLength());
-                    double[] angle = new double[2];
+                    /*double[] prevAngle = new double[2];
                     if (ftSequence.getLength() > 0) {
-                        angle = ftSequence.getAngle(ftSequence.getLength() - 1).clone();
-                    }
+                        prevAngle = ftSequence.getAngle(ftSequence.getLength() - 1).clone();
+                    }*/
 
-                    if (ftSequence.getLength() > 0 &&
-                            angle[0] != GLRendererFemurTibia.angle[0] &&
-                            angle[1] != GLRendererFemurTibia.angle[1] ||
-                            ftSequence.getLength() == 0) {
+                    /*if (ftSequence.getLength() > 0
+                            && prevAngle[0] != GLRendererFemurTibia.angle[0]
+                            && prevAngle[1] != GLRendererFemurTibia.angle[1]
+                            || ftSequence.getLength() == 0) {*/
                         ftSequence.addContent(GLRendererFemurTibia.angle[0], GLRendererFemurTibia.angle[1]);
-                    }
+                        //System.out.println(GLRendererFemurTibia.angle[0] + ", " + GLRendererFemurTibia.angle[1]);
+                    //}
                     //System.out.println(ftSequence);
                 }
 
                 if (cCaptureButton.isSelected()) {
-                    double angle[] = new double[2];
+                    /*double prevAngle[] = new double[2];
                     if (cSequence.getLength() > 0) {
-                        angle = cSequence.getAngle(cSequence.getLength() - 1).clone();
+                        prevAngle = cSequence.getAngle(cSequence.getLength() - 1).clone();
                     }
 
-                    if (cSequence.getLength() > 0 &&
-                            angle[0] != GLRendererCoxa.angle ||
-                            cSequence.getLength() == 0) {
+                    if (cSequence.getLength() > 0
+                            && prevAngle[0] != GLRendererCoxa.angle
+                            || cSequence.getLength() == 0) {*/
                         cSequence.addContent(GLRendererCoxa.angle, 0);
-                    }
+                    //}
                 }
             }
         };
@@ -145,30 +196,26 @@ public class HexapodSimulator extends JFrame {
         cSequence = new HexiSequenz();
         sequenceVector = new Vector<HexiSequenz>();
         superSeq = new SuperSeq();
-        try {
-            FileInputStream file = new FileInputStream("sequences.dat");
-            ObjectInputStream in = new ObjectInputStream(file);
-            sequenceVector = (Vector<HexiSequenz>) in.readObject();
-            in.close();
-        } catch (FileNotFoundException ex) {
-            System.out.println("File not found.");
-        } catch (IOException ex) {
-            System.out.println("IO Exception (read)");
-            System.out.println(ex);
-        } catch (ClassNotFoundException ex) {
-            System.out.println("Class not found.");
+
+        HexapodSimulatorProjectDataPart project = new HexapodSimulatorProjectDataPart();
+
+        if (properties != null && properties.projectFile != null) {
+            try {
+                openProjectFile(properties.projectFile);
+            } catch (FileNotFoundException ex) {
+                System.out.println("Project file not found.");
+            } catch (IOException ex) {
+                System.out.println("IO Exception while reading the project file");
+                System.out.println(ex);
+            } catch (ClassNotFoundException ex) {
+                System.out.println("Class not found.");
+                System.out.println(ex);
+            } catch (JavaLayerException ex) {
+                System.out.println("JavaLayer exception while opening project file");
+            }
         }
-        HexiSequenz[] readSequences = new HexiSequenz[sequenceVector.size()];
+        superSeq.interpolate = properties.interpolateOutput == true ? 1 : 0;
         System.out.println(sequenceVector);
-        sequenceVector.toArray(readSequences);
-        String[] names = new String[readSequences.length];
-        for (int i = 0; i < readSequences.length; i++) {
-            names[i] = readSequences[i].getName();
-        }
-        sequenceList = new JList(names);
-        sequenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        sequenceList.setDragEnabled(true);
-        jScrollPane1.setViewportView(sequenceList);
 
         new DropTarget(timeBarViewer1, new DropTargetListener() {
 
@@ -228,6 +275,7 @@ public class HexapodSimulator extends JFrame {
                             timeBarViewer1.setModel(ModelCreator.createModel());
                             dtde.acceptDrop(dtde.getDropAction());
                             dtde.dropComplete(true);
+                            projectChanged = true;
                         }
                     }
                 } catch (UnsupportedFlavorException ex) {
@@ -375,8 +423,7 @@ public class HexapodSimulator extends JFrame {
                         JFileChooser fc = new JFileChooser();
                         fc.showOpenDialog(panel3dModel);
                         File f = fc.getSelectedFile();
-                        musicFile = f;
-                        FileInputStream fis = new FileInputStream(f);
+                        musicInputStream = new FileInputStream(f);
 
                         MP3File mp3file = new MP3File(f);
                         String songTitle, artist;
@@ -415,7 +462,7 @@ public class HexapodSimulator extends JFrame {
                     } catch (IOException ex) {
                         System.out.println("IO Exception while calculating Song Length.");
                     }/* catch (JavaLayerException ex) {
-                        System.out.println("JavaLayerException while opening file.");
+                    System.out.println("JavaLayerException while opening file.");
                     }*/
                     return;
                 }
@@ -423,27 +470,45 @@ public class HexapodSimulator extends JFrame {
                 if (e.getButton() == MouseEvent.BUTTON1) {  // leftclick
                     tempInterval = ModelCreator.getInterval(rowIndex, intervalIndex);
                     tempRow = row;
-                    ModelCreator.remInterval(rowIndex, intervalIndex);
                     try {
-                        superSeq.delSeq(date.getMinutes() * 60000 + date.getSeconds() * 1000 + date.getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                        superSeq.delSeq(tempInterval.getBegin().getMinutes() * 60000 + tempInterval.getBegin().getSeconds() * 1000 + tempInterval.getBegin().getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
                     } catch (Exception ex) {
                         System.out.println(ex);
                     }
+                    ModelCreator.remInterval(rowIndex, intervalIndex);
                     timeBarViewer1.setModel(ModelCreator.createModel());
                     timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
                 } else if (e.getButton() == MouseEvent.BUTTON3) {   // rightclick
+                    System.out.println(jPanel1.getRootPane().getParent().getName());
+                    SequenceTimebarDialog dialog = new SequenceTimebarDialog((Frame) jPanel1.getRootPane().getParent());
                     JaretDate oldBeginDate = ModelCreator.getInterval(rowIndex, intervalIndex).getBegin();
-                    JaretDate newBeginDate = new JaretDate(1, 1, 1970, 1, 0, 0);
-                    String oldBeginDateString = oldBeginDate.getMinutes() + ":" + oldBeginDate.getSeconds() + "." + oldBeginDate.getMillis();
-                    String newBeginDateString = JOptionPane.showInputDialog("Start time? (minutes:seconds.millis)", oldBeginDateString);
-                    String[] newBeginDateSplittedString = newBeginDateString.split(":", 2);
-                    newBeginDate.setMinutes(Integer.parseInt(newBeginDateSplittedString[0]));
-                    newBeginDateSplittedString = newBeginDateSplittedString[1].split("\\.", 2);
-                    newBeginDate.setSeconds(Integer.parseInt(newBeginDateSplittedString[0]));
-                    newBeginDate.setMilliseconds(Integer.parseInt(newBeginDateSplittedString[1]));
+                    dialog.setDate(oldBeginDate.getDate());
+                    dialog.setLocation(100, 100);
+                    dialog.setVisible(true);
+                    if (dialog.getCancelled() || dialog.getDate() == null) {
+                        return;
+                    }
+                    if (dialog.getDeleted()) {
+                        ModelCreator.remInterval(rowIndex, intervalIndex);
+                        timeBarViewer1.setModel(ModelCreator.createModel());
+                        timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
+                        try {
+                            superSeq.delSeq(oldBeginDate.getMinutes() * 60000 + oldBeginDate.getSeconds() * 1000 + oldBeginDate.getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                            projectChanged = true;
+                        } catch (Exception ex) {
+                            System.out.println(ex);
+                        }
+                        return;
+                    }
+                    JaretDate newBeginDate = new JaretDate(dialog.getDate());
 
                     tempInterval = ModelCreator.getInterval(rowIndex, intervalIndex);
                     ModelCreator.remInterval(rowIndex, intervalIndex);
+                    try {
+                        superSeq.delSeq(oldBeginDate.getMinutes() * 60000 + oldBeginDate.getSeconds() * 1000 + oldBeginDate.getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                    } catch (Exception ex) {
+                        System.out.println(ex);
+                    }
                     long duration = tempInterval.getMillis();
                     tempInterval.setBegin(newBeginDate);
                     tempInterval.setEnd(newBeginDate.copy().advanceMillis(duration));
@@ -451,6 +516,7 @@ public class HexapodSimulator extends JFrame {
                         superSeq.addSeq(getSequenceByName(tempInterval.getTitle()), newBeginDate.getMinutes() * 60000 + newBeginDate.getSeconds() * 1000 + newBeginDate.getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
                         timeBarViewer1.setModel(ModelCreator.createModel());
                         timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
+                        projectChanged = true;
                     } else {
                         tempInterval.setBegin(oldBeginDate);
                         tempInterval.setEnd(oldBeginDate.copy().advanceMillis(duration));
@@ -479,11 +545,12 @@ public class HexapodSimulator extends JFrame {
                     tempInterval.setBegin(begin);
                     tempInterval.setEnd(begin.copy().advanceMillis(duration));
 
-                    if (ModelCreator.addInterval(rowIndex, tempInterval) != -1 &&
-                            row.getType().equals(tempRow.getType())) {
+                    if (ModelCreator.addInterval(rowIndex, tempInterval) != -1
+                            && row.getType().equals(tempRow.getType())) {
                         superSeq.addSeq(getSequenceByName(tempInterval.getTitle()), seconds * 1000 + milliseconds, row.getSecID(), row.getType().equals("ft") ? 0 : 1);
                         timeBarViewer1.setModel(ModelCreator.createModel());
                         timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
+                        projectChanged = true;
                     } else {
                         tempInterval.setBegin(oldBeginDate);
                         tempInterval.setEnd(oldBeginDate.copy().advanceMillis(duration));
@@ -505,24 +572,40 @@ public class HexapodSimulator extends JFrame {
             }
         });
 
-        double[][] angle = {{45, 45, 45}, {45, 45, 45}, {45, 45, 45}, {45, 45, 45}, {45, 45, 45}, {45, 45, 45}};
+        double[][] angle = {{0, 45, 45}, {0, 45, 45}, {0, 45, 45}, {0, 45, 45}, {0, 45, 45}, {0, 45, 45}};
         GLRenderer3dModel.setAngle(angle);
+
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         this.addWindowListener(new WindowAdapter() {
 
             @Override
             public void windowClosing(WindowEvent e) {
                 try {
-                    FileOutputStream file = new FileOutputStream("sequences.dat", false);
-                    ObjectOutputStream os = new ObjectOutputStream(file);
-                    os.writeObject(sequenceVector);
+                    if (!ensureProjectSaving()) {
+                        return;
+                    }
+                    ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream("properties.dat"));
+                    os.writeObject(properties);
                     os.close();
                 } catch (FileNotFoundException ex) {
-                    System.out.println("File not found.");
+                    System.out.println("Properties File not found.");
                 } catch (IOException ex) {
-                    System.out.println("IO Exception (write)");
+                    System.out.println("IO Exception while writing properties file");
+                    System.out.println(ex);
                 }
-
+                /*
+                try {
+                FileOutputStream file = new FileOutputStream("sequences.dat", false);
+                ObjectOutputStream os = new ObjectOutputStream(file);
+                os.writeObject(sequenceVector);
+                os.close();
+                } catch (FileNotFoundException ex) {
+                System.out.println("File not found.");
+                } catch (IOException ex) {
+                System.out.println("IO Exception (write)");
+                }
+                 */
                 // Run this on another thread than the AWT event queue to
                 // make sure the call to Animator.stop() completes before
                 // exiting
@@ -605,6 +688,7 @@ public class HexapodSimulator extends JFrame {
         panelFemurTibia = new GLJPanel();
         hintFemurTibia = new JLabel();
         hintFemurTibia.setVisible(false);
+        kneeModeLabel = new JLabel();
         panelCoxa = new GLJPanel();
         hintCoxa = new JLabel();
         hintCoxa.setVisible(false);
@@ -629,6 +713,20 @@ public class HexapodSimulator extends JFrame {
         deleteButton = new JButton();
         playButton = new JButton();
         stopButton = new JButton();
+        jMenuBar1 = new JMenuBar();
+        fileMenu = new JMenu();
+        openProjectMenuItem = new JMenuItem();
+        closeProjectMenuItem = new JMenuItem();
+        jSeparator1 = new JSeparator();
+        saveProjectMenuItem = new JMenuItem();
+        saveProjectAsMenuItem = new JMenuItem();
+        jSeparator2 = new JSeparator();
+        importSequencesMenuItem = new JMenuItem();
+        jSeparator3 = new JSeparator();
+        exportMenuItem = new JMenuItem();
+        propertiesMenu = new JMenu();
+        normalizeInputCheckBoxMenuItem = new JCheckBoxMenuItem();
+        interpolateOutputCheckBoxMenuItem = new JCheckBoxMenuItem();
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
@@ -636,7 +734,7 @@ public class HexapodSimulator extends JFrame {
         panel3dModel.setLayout(panel3dModelLayout);
         panel3dModelLayout.setHorizontalGroup(
             panel3dModelLayout.createParallelGroup(GroupLayout.LEADING)
-            .add(0, 467, Short.MAX_VALUE)
+            .add(0, 468, Short.MAX_VALUE)
         );
         panel3dModelLayout.setVerticalGroup(
             panel3dModelLayout.createParallelGroup(GroupLayout.LEADING)
@@ -649,21 +747,29 @@ public class HexapodSimulator extends JFrame {
         hintFemurTibia.setHorizontalAlignment(SwingConstants.CENTER);
         hintFemurTibia.setText("Drop here to get a preview");
 
+        kneeModeLabel.setForeground(new Color(255, 255, 255));
+        kneeModeLabel.setText("Knee up");
+        kneeModeLabel.setName("kneeMode"); // NOI18N
+
         GroupLayout panelFemurTibiaLayout = new GroupLayout(panelFemurTibia);
         panelFemurTibia.setLayout(panelFemurTibiaLayout);
         panelFemurTibiaLayout.setHorizontalGroup(
             panelFemurTibiaLayout.createParallelGroup(GroupLayout.LEADING)
             .add(panelFemurTibiaLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(hintFemurTibia, GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)
+                .add(panelFemurTibiaLayout.createParallelGroup(GroupLayout.LEADING)
+                    .add(kneeModeLabel)
+                    .add(panelFemurTibiaLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(hintFemurTibia, GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         panelFemurTibiaLayout.setVerticalGroup(
             panelFemurTibiaLayout.createParallelGroup(GroupLayout.LEADING)
             .add(GroupLayout.TRAILING, panelFemurTibiaLayout.createSequentialGroup()
-                .addContainerGap(147, Short.MAX_VALUE)
+                .addContainerGap(148, Short.MAX_VALUE)
                 .add(hintFemurTibia)
-                .add(144, 144, 144))
+                .add(127, 127, 127)
+                .add(kneeModeLabel))
         );
 
         panelCoxa.setPreferredSize(new Dimension(307, 307));
@@ -843,7 +949,7 @@ public class HexapodSimulator extends JFrame {
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(stopButton, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.UNRELATED)
-                                .add(rotationSlider, GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE))
+                                .add(rotationSlider, GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE))
                             .add(panel3dModel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
@@ -881,7 +987,7 @@ public class HexapodSimulator extends JFrame {
                             .add(jPanel1Layout.createSequentialGroup()
                                 .add(cCaptureButton)
                                 .add(24, 24, 24)
-                                .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
+                                .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(deleteButton)
                                 .add(28, 28, 28)))))
@@ -907,7 +1013,7 @@ public class HexapodSimulator extends JFrame {
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
                             .add(deleteButton)
-                            .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                            .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
                             .add(jPanel1Layout.createSequentialGroup()
                                 .add(jPanel1Layout.createParallelGroup(GroupLayout.BASELINE)
                                     .add(jCheckBox1)
@@ -932,6 +1038,88 @@ public class HexapodSimulator extends JFrame {
         );
 
         getContentPane().add(jPanel1, BorderLayout.CENTER);
+
+        fileMenu.setText("File");
+
+        openProjectMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
+        openProjectMenuItem.setText("Open Project");
+        openProjectMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                openProjectMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(openProjectMenuItem);
+
+        closeProjectMenuItem.setText("Close Project");
+        closeProjectMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                closeProjectMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(closeProjectMenuItem);
+        fileMenu.add(jSeparator1);
+
+        saveProjectMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+        saveProjectMenuItem.setText("Save Project");
+        saveProjectMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                saveProjectMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(saveProjectMenuItem);
+
+        saveProjectAsMenuItem.setText("Save Project As");
+        saveProjectAsMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                saveProjectAsMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(saveProjectAsMenuItem);
+        fileMenu.add(jSeparator2);
+
+        importSequencesMenuItem.setText("Import sequences from existing project");
+        importSequencesMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                importSequencesMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(importSequencesMenuItem);
+        fileMenu.add(jSeparator3);
+
+        exportMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_MASK));
+        exportMenuItem.setText("Export for Hexapod");
+        exportMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                exportMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(exportMenuItem);
+
+        jMenuBar1.add(fileMenu);
+
+        propertiesMenu.setText("Properties");
+
+        normalizeInputCheckBoxMenuItem.setSelected(true);
+        normalizeInputCheckBoxMenuItem.setText("Normalize Input");
+        normalizeInputCheckBoxMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                normalizeInputCheckBoxMenuItemActionPerformed(evt);
+            }
+        });
+        propertiesMenu.add(normalizeInputCheckBoxMenuItem);
+
+        interpolateOutputCheckBoxMenuItem.setSelected(true);
+        interpolateOutputCheckBoxMenuItem.setText("Interpolate Output");
+        interpolateOutputCheckBoxMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                interpolateOutputCheckBoxMenuItemActionPerformed(evt);
+            }
+        });
+        propertiesMenu.add(interpolateOutputCheckBoxMenuItem);
+
+        jMenuBar1.add(propertiesMenu);
+
+        setJMenuBar(jMenuBar1);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -962,6 +1150,16 @@ public class HexapodSimulator extends JFrame {
 
     private void ftCaptureButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_ftCaptureButtonActionPerformed
         if (!((JToggleButton) evt.getSource()).isSelected()) {
+            ftSequence.addContent(GLRendererFemurTibia.angle[0], GLRendererFemurTibia.angle[1]); // add the last value
+            ftSequence.clean();
+            System.out.println("cleaned:");
+            System.out.println(ftSequence);
+            if (properties.normalizeInput) {
+                ftSequence.normalize();
+                ftSequence.clean();
+            }
+            System.out.println("normalized:");
+            System.out.println(ftSequence);
             String name;
             boolean validName = false;
             do {
@@ -976,7 +1174,7 @@ public class HexapodSimulator extends JFrame {
                     validName = true;
                 }
             } while (!validName);
-            String time = JOptionPane.showInputDialog("Zeit (ms)?");
+            String time = JOptionPane.showInputDialog("Time (milliseconds)?");
 
             ftSequence.setTime(Integer.parseInt(time));
             ftSequence.setName(name);
@@ -996,11 +1194,22 @@ public class HexapodSimulator extends JFrame {
 
             sequenceVector.addElement(ftSequence);
             ftSequence = new HexiSequenz();   // !
+            projectChanged = true;
         }
     }//GEN-LAST:event_ftCaptureButtonActionPerformed
 
     private void cCaptureButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_cCaptureButtonActionPerformed
         if (!((JToggleButton) evt.getSource()).isSelected()) {
+            cSequence.addContent(GLRendererCoxa.angle, 0);
+            cSequence.clean();
+            System.out.println("cleaned:");
+            System.out.println(cSequence);
+            if (properties.normalizeInput) {
+                cSequence.normalize();
+                ftSequence.clean();
+            }
+            System.out.println("normalized:");
+            System.out.println(cSequence);
             String name;
             boolean validName = false;
             do {
@@ -1015,7 +1224,7 @@ public class HexapodSimulator extends JFrame {
                     validName = true;
                 }
             } while (!validName);
-            String time = JOptionPane.showInputDialog("Zeit (ms)?");
+            String time = JOptionPane.showInputDialog("Time (milliseconds)?");
 
             cSequence.setTime(Integer.parseInt(time));
             cSequence.setName(name);
@@ -1035,11 +1244,26 @@ public class HexapodSimulator extends JFrame {
 
             sequenceVector.addElement(cSequence);
             cSequence = new HexiSequenz();   // !
+            projectChanged = true;
         }
     }//GEN-LAST:event_cCaptureButtonActionPerformed
 
     private void deleteButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         int index = sequenceList.getSelectedIndex();
+
+        // delete this sequence in the super sequence, ...
+        try {
+            superSeq.delSeq(sequenceVector.get(index).getName());
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+
+        // ... in the timebar model, ...
+        ModelCreator.remInterval(sequenceVector.get(index).getName());
+        timeBarViewer1.setModel(ModelCreator.createModel());
+        timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
+
+        // ... in the sequence vector and in the sequence list
         sequenceVector.removeElementAt(index);
         ListModel items = sequenceList.getModel();
         Vector listentries = new Vector(items.getSize());
@@ -1051,17 +1275,19 @@ public class HexapodSimulator extends JFrame {
         sequenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         sequenceList.setDragEnabled(true);
         jScrollPane1.setViewportView(sequenceList);
+
+        projectChanged = true;
     }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void playButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_playButtonActionPerformed
-        try {
-            musicPlayer = new MusicPlayer(musicFile);
-            musicPlayer.start();
-            musicPlayer.setRunning(true);
-        } catch (FileNotFoundException fileNotFoundException) {
-            System.out.println("File not found");
-        } catch (JavaLayerException javaLayerException) {
-            System.out.println("JavaLayerException while opening file.");
+        if (musicInputStream != null) {
+            try {
+                musicPlayer = new MusicPlayer(musicInputStream);
+                musicPlayer.start();
+                //musicPlayer.setRunning(true);
+            } catch (JavaLayerException ex) {
+                System.out.println("JavaLayerException while opening file.");
+            }
         }
 
         sequencePlayer = new SequencePlayer(superSeq);
@@ -1081,8 +1307,10 @@ public class HexapodSimulator extends JFrame {
     }//GEN-LAST:event_playButtonActionPerformed
 
     private void stopButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
-        musicPlayer.setRunning(false);
-        musicPlayer = null;
+        if (musicPlayer != null) {
+            musicPlayer.closePlayer();
+            musicPlayer = null;
+        }
 
         sequencePlayer.cancel();
         timeBarMarkerTimer.cancel();
@@ -1090,6 +1318,148 @@ public class HexapodSimulator extends JFrame {
         timeBarViewer1.remMarker(markers.get(0));
         timeBarViewer1.repaint();
     }//GEN-LAST:event_stopButtonActionPerformed
+
+    private void exportMenuItemActionPerformed(ActionEvent evt) {//GEN-FIRST:event_exportMenuItemActionPerformed
+        JFileChooser fc = new JFileChooser();
+        if (fc.showSaveDialog(jPanel1) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        File f = fc.getSelectedFile();
+        try {
+            superSeq.angletofile(f);
+        } catch (Exception ex) {
+            //System.out.println("An error occured while exporting the Project");
+            ex.printStackTrace();
+        }
+    }//GEN-LAST:event_exportMenuItemActionPerformed
+
+    private void saveProjectAsMenuItemActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveProjectAsMenuItemActionPerformed
+        int option;
+        JFileChooser fc = new JFileChooser();
+        fc.setAcceptAllFileFilterUsed(false);
+        fc.setFileFilter(new HexapodSimulatorProjectFileFilter());
+        File f;
+        do {
+            if (fc.showSaveDialog(jPanel1) != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+            f = fc.getSelectedFile();
+            if (f.exists()) {
+                option = JOptionPane.showConfirmDialog(null, "This file already exists. Do you want to replace it?");
+                if (option == JOptionPane.CANCEL_OPTION) {
+                    return;
+                }
+            } else {
+                option = JOptionPane.YES_OPTION;
+            }
+        } while (option != JOptionPane.YES_OPTION);
+        if (!f.getName().toLowerCase().endsWith(HexapodSimulatorProjectFileFilter.extension)) {
+            f = new File(fc.getSelectedFile().getPath().concat(HexapodSimulatorProjectFileFilter.extension));
+        }
+
+        try {
+            saveProjectFile(f);
+        } catch (IOException ex) {
+            System.out.println("An error occured while writing the Project File");
+            System.out.println(ex);
+        }
+    }//GEN-LAST:event_saveProjectAsMenuItemActionPerformed
+
+    private void closeProjectMenuItemActionPerformed(ActionEvent evt) {//GEN-FIRST:event_closeProjectMenuItemActionPerformed
+        try {
+            closeProjectFile();
+        } catch (IOException ex) {
+            System.out.println("An error occured while saving the Project File");
+            System.out.println(ex);
+        }
+    }//GEN-LAST:event_closeProjectMenuItemActionPerformed
+
+    private void openProjectMenuItemActionPerformed(ActionEvent evt) {//GEN-FIRST:event_openProjectMenuItemActionPerformed
+        JFileChooser fc = new JFileChooser();
+        fc.setAcceptAllFileFilterUsed(false);
+        fc.setFileFilter(new HexapodSimulatorProjectFileFilter());
+        if (fc.showOpenDialog(jPanel1) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        File f = fc.getSelectedFile();
+
+        try {
+            openProjectFile(f);
+        } catch (IOException ex) {
+            System.out.println("An error occured while opening the Project File");
+            System.out.println(ex);
+        } catch (NullPointerException ex) {
+            System.out.println("An error occured while opening the Project File");
+            System.out.println(ex);
+        } catch (ClassNotFoundException ex) {
+            System.out.println("An error occured while opening the Project File: A class was not found");
+        } catch (JavaLayerException ex) {
+            System.out.println("JavaLayer exception while loading music from project file");
+        }
+    }//GEN-LAST:event_openProjectMenuItemActionPerformed
+
+    private void saveProjectMenuItemActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveProjectMenuItemActionPerformed
+        if (properties.projectFile == null) {
+            saveProjectAsMenuItem.doClick();
+        } else {
+            try {
+                saveProjectFile(properties.projectFile);
+            } catch (IOException ex) {
+                System.out.println("An error occured while writing the Project File");
+                System.out.println(ex);
+            }
+        }
+    }//GEN-LAST:event_saveProjectMenuItemActionPerformed
+
+    private void importSequencesMenuItemActionPerformed(ActionEvent evt) {//GEN-FIRST:event_importSequencesMenuItemActionPerformed
+        JFileChooser fc = new JFileChooser();
+        fc.setAcceptAllFileFilterUsed(false);
+        fc.setFileFilter(new HexapodSimulatorProjectFileFilter());
+        if (fc.showOpenDialog(jPanel1) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        try {
+            ZipFile zipFile = new ZipFile(fc.getSelectedFile());
+            ObjectInputStream dataInputStream = new ObjectInputStream(zipFile.getInputStream(zipFile.getEntry("data")));
+            Vector<HexiSequenz> sequences = ((HexapodSimulatorProjectDataPart) dataInputStream.readObject()).getSequences();
+            for (int i = 0; i < sequences.size(); i++) {
+                if (getSequenceByName(sequences.elementAt(i).getName()) != null) {
+                    String nameWithoutSuffix = sequences.elementAt(i).getName();
+                    int nameSuffix = 1;
+                    do {
+                        sequences.elementAt(i).setName(nameWithoutSuffix + "_" + nameSuffix);
+                        nameSuffix++;
+                    } while (getSequenceByName(sequences.elementAt(i).getName()) != null);
+                }
+                sequenceVector.add(sequences.elementAt(i));
+            }
+            HexiSequenz[] readSequences = new HexiSequenz[sequenceVector.size()];
+            sequenceVector.toArray(readSequences);
+            String[] names = new String[readSequences.length];
+            for (int i = 0; i < readSequences.length; i++) {
+                names[i] = readSequences[i].getName();
+            }
+            sequenceList = new JList(names);
+            sequenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            sequenceList.setDragEnabled(true);
+            jScrollPane1.setViewportView(sequenceList);
+        } catch (IOException ex) {
+            System.out.println("An error occured while opening the Project file to import the sequences");
+            System.out.println(ex);
+        } catch (ClassNotFoundException ex) {
+            System.out.println("An error occured while opening the Project File to import the sequences: A class was not found");
+        }
+        projectChanged = true;
+    }//GEN-LAST:event_importSequencesMenuItemActionPerformed
+
+    private void normalizeInputCheckBoxMenuItemActionPerformed(ActionEvent evt) {//GEN-FIRST:event_normalizeInputCheckBoxMenuItemActionPerformed
+        properties.normalizeInput = normalizeInputCheckBoxMenuItem.getState();
+    }//GEN-LAST:event_normalizeInputCheckBoxMenuItemActionPerformed
+
+    private void interpolateOutputCheckBoxMenuItemActionPerformed(ActionEvent evt) {//GEN-FIRST:event_interpolateOutputCheckBoxMenuItemActionPerformed
+        properties.interpolateOutput = interpolateOutputCheckBoxMenuItem.getState();
+        superSeq.interpolate = interpolateOutputCheckBoxMenuItem.getState() == true ? 1 : 0;
+    }//GEN-LAST:event_interpolateOutputCheckBoxMenuItemActionPerformed
 
     private HexiSequenz getSequenceByName(String name) {
         HexiSequenz seq = null;
@@ -1100,6 +1470,110 @@ public class HexapodSimulator extends JFrame {
             }
         }
         return seq;
+    }
+
+    private void openProjectFile(File file) throws IOException, NullPointerException, ClassNotFoundException, JavaLayerException {
+        if (!ensureProjectSaving()) {
+            return;
+        }
+
+        ZipFile zipFile = new ZipFile(file);
+        ObjectInputStream dataInputStream = new ObjectInputStream(zipFile.getInputStream(zipFile.getEntry("data")));
+        HexapodSimulatorProjectDataPart projectDataPart = (HexapodSimulatorProjectDataPart) dataInputStream.readObject();
+        superSeq = projectDataPart.getSuperSeq();
+        ModelCreator.setIntervals(projectDataPart.getIntervals());
+        timeBarViewer1.setModel(ModelCreator.createModel());
+        timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
+        sequenceVector = projectDataPart.getSequences();
+        HexiSequenz[] readSequences = new HexiSequenz[sequenceVector.size()];
+        sequenceVector.toArray(readSequences);
+        String[] names = new String[readSequences.length];
+        for (int i = 0; i < readSequences.length; i++) {
+            names[i] = readSequences[i].getName();
+        }
+        sequenceList = new JList(names);
+        sequenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        sequenceList.setDragEnabled(true);
+        jScrollPane1.setViewportView(sequenceList);
+
+        if (zipFile.getEntry("music") != null) {
+            musicInputStream = zipFile.getInputStream(zipFile.getEntry("music"));
+            //musicPlayer = new MusicPlayer(musicInputStream);
+        }
+        zipFile.close();
+
+        setTitle("Hexapod Simulator - " + file.getName());
+        properties.projectFile = file;
+        projectChanged = false;
+    }
+
+    private void closeProjectFile() throws IOException {
+        if (!ensureProjectSaving()) {
+            return;
+        }
+        superSeq = new SuperSeq();
+        ModelCreator.clear();
+        timeBarViewer1.setModel(ModelCreator.createModel());
+        timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
+        sequenceVector.clear();
+        sequenceList = new JList();
+        sequenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        sequenceList.setDragEnabled(true);
+        jScrollPane1.setViewportView(sequenceList);
+        musicInputStream = null;
+        setTitle("Hexapod Simulator");
+        properties.projectFile = null;
+        projectChanged = false;
+    }
+
+    private void saveProjectFile(File file) throws IOException {
+        ZipEntry data = new ZipEntry("data");
+        ZipEntry music = new ZipEntry("music");
+        ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(file));
+        zipOutputStream.setMethod(ZipOutputStream.DEFLATED);    // compress zip file
+        HexapodSimulatorProjectDataPart projectDataPart = new HexapodSimulatorProjectDataPart(null, superSeq, sequenceVector, ModelCreator.getIntervals());
+
+        zipOutputStream.putNextEntry(data);
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(zipOutputStream);
+        objectOutputStream.writeObject(projectDataPart);
+
+        if (musicInputStream != null) {
+            zipOutputStream.putNextEntry(music);
+
+            int buffer;
+            while ((buffer = musicInputStream.read()) != -1) {
+                zipOutputStream.write(buffer);
+            }
+            zipOutputStream.closeEntry();
+        }
+
+        zipOutputStream.finish();
+        zipOutputStream.close();
+
+        setTitle("Hexapod Simulator - " + file.getName());
+        properties.projectFile = file;
+        projectChanged = false;
+    }
+
+    /**
+     * Asks the user to save the project if there are unsaved changes.
+     * @return true if the changes were saved, false if the user has cancelled the operation
+     */
+    private boolean ensureProjectSaving() throws IOException {
+        if (projectChanged) {
+            int option = JOptionPane.showConfirmDialog(null, "The project has unsaved changes. Do you want to save the file?");
+            if (option == JOptionPane.YES_OPTION) {
+                if (properties.projectFile == null) {
+                    saveProjectAsMenuItem.doClick();
+                } else {
+                    saveProjectFile(properties.projectFile);
+                }
+            }
+            if (option == JOptionPane.CANCEL_OPTION) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -1132,6 +1606,7 @@ public class HexapodSimulator extends JFrame {
                 // switch to system l&f for native font rendering etc.
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    //UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
                 } catch (Exception ex) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, "can not enable system look and feel", ex);
                 }
@@ -1145,10 +1620,15 @@ public class HexapodSimulator extends JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JToggleButton cCaptureButton;
+    private JMenuItem closeProjectMenuItem;
     private JButton deleteButton;
+    private JMenuItem exportMenuItem;
+    private JMenu fileMenu;
     private JToggleButton ftCaptureButton;
     private JLabel hintCoxa;
     private JLabel hintFemurTibia;
+    private JMenuItem importSequencesMenuItem;
+    private JCheckBoxMenuItem interpolateOutputCheckBoxMenuItem;
     private JButton jButton1;
     private JButton jButton2;
     private JButton jButton3;
@@ -1161,13 +1641,23 @@ public class HexapodSimulator extends JFrame {
     private JCheckBox jCheckBox4;
     private JCheckBox jCheckBox5;
     private JCheckBox jCheckBox6;
+    private JMenuBar jMenuBar1;
     private JPanel jPanel1;
     private JScrollPane jScrollPane1;
+    private JSeparator jSeparator1;
+    private JSeparator jSeparator2;
+    private JSeparator jSeparator3;
+    private JLabel kneeModeLabel;
+    private JCheckBoxMenuItem normalizeInputCheckBoxMenuItem;
+    private JMenuItem openProjectMenuItem;
     private GLJPanel panel3dModel;
     private GLJPanel panelCoxa;
     private GLJPanel panelFemurTibia;
     private JButton playButton;
+    private JMenu propertiesMenu;
     private JSlider rotationSlider;
+    private JMenuItem saveProjectAsMenuItem;
+    private JMenuItem saveProjectMenuItem;
     private JList sequenceList;
     private JButton stopButton;
     private TimeBarViewer timeBarViewer1;
