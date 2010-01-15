@@ -1150,12 +1150,12 @@ public class HexapodSimulator extends JFrame {
 
     private void ftCaptureButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_ftCaptureButtonActionPerformed
         if (!((JToggleButton) evt.getSource()).isSelected()) {
-            ftSequence.addContent(GLRendererFemurTibia.angle[0], GLRendererFemurTibia.angle[1]); // add the last value
             ftSequence.clean();
             System.out.println("cleaned:");
             System.out.println(ftSequence);
             if (properties.normalizeInput) {
                 ftSequence.normalize();
+                ftSequence.addContent(GLRendererFemurTibia.angle[0], GLRendererFemurTibia.angle[1]); // add the last value
                 ftSequence.clean();
             }
             System.out.println("normalized:");
@@ -1200,12 +1200,12 @@ public class HexapodSimulator extends JFrame {
 
     private void cCaptureButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_cCaptureButtonActionPerformed
         if (!((JToggleButton) evt.getSource()).isSelected()) {
-            cSequence.addContent(GLRendererCoxa.angle, 0);
             cSequence.clean();
             System.out.println("cleaned:");
             System.out.println(cSequence);
             if (properties.normalizeInput) {
                 cSequence.normalize();
+                cSequence.addContent(GLRendererCoxa.angle, 0);
                 ftSequence.clean();
             }
             System.out.println("normalized:");
