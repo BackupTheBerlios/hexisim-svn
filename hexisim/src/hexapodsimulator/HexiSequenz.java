@@ -2,7 +2,7 @@ package hexapodsimulator;
 
 import java.io.*;
 import java.util.Vector;
-import javax.vecmath.Point3d;
+//import javax.vecmath.Point3d;
 
 /**
  * Beschreibt eine Bewegungssequenz f�r den Hexapodsimulator.<br />

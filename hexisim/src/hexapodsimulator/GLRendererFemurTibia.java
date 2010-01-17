@@ -37,8 +37,8 @@ public class GLRendererFemurTibia extends MouseAdapter implements GLEventListene
         GLJPanel glPanel = (GLJPanel) e.getSource();
         double xStart, x3, yStart, y3;
 
-        x3 = (double) e.getX() / glPanel.getWidth() * 2;
-        y3 = (double) e.getY() / glPanel.getHeight() * 2;
+        x3 = (double) e.getX() / glPanel.getWidth() * 2;    //Mouse position X, calculated
+        y3 = (double) e.getY() / glPanel.getHeight() * 2;   //Mouse position Y, calculated
 
         xStart = 0.8;
         yStart = 1;
@@ -51,29 +51,32 @@ public class GLRendererFemurTibia extends MouseAdapter implements GLEventListene
             angle[0] = 90 - Math.toDegrees(Math.atan((x3 - xStart) / (y3 - yStart))) - Math.toDegrees(angleIntermediateResult1);
             angle[1] = Math.toDegrees(angleIntermediateResult1) + Math.toDegrees(angleIntermediateResult2);
         
-        //TODO: calculate the right angles for knee down - mode
+        //TO-DO: calculate the right angles for knee down - mode - should work
         } else if (!currentKneeUp && !Double.isNaN(angleIntermediateResult1) && !Double.isNaN(angleIntermediateResult2)) {
-            angle[0] = - 90 - Math.toDegrees(Math.atan((x3 - xStart) / (y3 - yStart))) - Math.toDegrees(angleIntermediateResult1);
-            angle[1] = - Math.toDegrees(angleIntermediateResult1) + Math.toDegrees(angleIntermediateResult2);
+            angle[0] = 90 - Math.toDegrees(Math.atan((x3 - xStart) / (y3 - yStart))) + Math.toDegrees(angleIntermediateResult1);
+            angle[1] = - Math.toDegrees(angleIntermediateResult1) - Math.toDegrees(angleIntermediateResult2);
         }
 
         if (Math.hypot(x3 - xStart, y3 - yStart) >= (b1 + b2)) { // Mouse position is out of range
             angle[0] = 90 - Math.toDegrees(Math.atan((x3 - xStart) / (y3 - yStart)));
             angle[1] = 0;
-            if (currentKneeUp != kneeUp) {
+            //if (currentKneeUp != kneeUp) {    //lol - n1
                 currentKneeUp = kneeUp;
-            }
+            //}
         }
 
+        //Maybe it's better to treat both angles eqally (?)
         double[] anglePwmValue = new double[3];
         anglePwmValue[0] = Math.toRadians(-angle[0])*1024 + 2145;
         anglePwmValue[1] = Math.toRadians(-angle[1])*1024 + 2680;
-        /*if (angle[0] < (-72.9 + 30) || angle[0] > (93.3 + 30)) {*/ if(anglePwmValue[0] > 3277 || anglePwmValue[0] < 306) {
+        /*if (angle[0] < (-72.9 + 30) || angle[0] > (93.3 + 30)) {* if(anglePwmValue[0] > 3277 || anglePwmValue[0] < 306) {
             angle[0] = oldAngle[0];
         }
-        /*if (angle[1] < (-90 + 59.9) || angle[1] > (83.9 + 59.9)) {*/ if(anglePwmValue[1] > 3109 || anglePwmValue[1] < 0) {
+        /*if (angle[1] < (-90 + 59.9) || angle[1] > (83.9 + 59.9)) {*/ if(anglePwmValue[1] > 3109 || anglePwmValue[1] < 0 || anglePwmValue[0] > 3277 || anglePwmValue[0] < 306) {
+            angle[0] = oldAngle[0];
             angle[1] = oldAngle[1];
         }
+
         //System.out.println((Math.toRadians(angle[0]) * 1024 + 2145) + ", " + (Math.toRadians(angle[1]) * 1024 + 2680));
     }
 
