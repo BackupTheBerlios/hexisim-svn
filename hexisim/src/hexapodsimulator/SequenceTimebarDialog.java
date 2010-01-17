@@ -23,10 +23,16 @@ public class SequenceTimebarDialog extends javax.swing.JDialog {
     private boolean cancelled;
 
     /** Creates new form SequenceTimebarDialog */
-    public SequenceTimebarDialog(java.awt.Frame parent) {
+    public SequenceTimebarDialog(java.awt.Frame parent, boolean showDate) {
         super(parent, true);
         initComponents();
         getRootPane().setDefaultButton(setTimeButton);
+        if(!showDate) {
+            minTextField.setEnabled(false);
+            secTextField.setEnabled(false);
+            msecTextField.setEnabled(false);
+            setTimeButton.setEnabled(false);
+        }
     }
 
     /** This method is called from within the constructor to

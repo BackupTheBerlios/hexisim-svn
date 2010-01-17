@@ -29,12 +29,13 @@ import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -86,6 +87,7 @@ import org.farng.mp3.id3.AbstractID3v2;
 import org.farng.mp3.id3.ID3v1;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import sun.org.mozilla.javascript.internal.ObjArray;
 
 /**
  * Main class for the Hexapod Simulator
@@ -102,6 +104,8 @@ public class HexapodSimulator extends JFrame {
     private HexiSequenz ftSequence, cSequence;
     private Vector<HexiSequenz> sequenceVector;
     private SuperSeq superSeq;
+    private File musicFile;
+    private boolean musicFileIsTempFile;
     private InputStream musicInputStream;
     private MusicPlayer musicPlayer;
     private SequencePlayer sequencePlayer;
@@ -423,6 +427,8 @@ public class HexapodSimulator extends JFrame {
                         JFileChooser fc = new JFileChooser();
                         fc.showOpenDialog(panel3dModel);
                         File f = fc.getSelectedFile();
+                        musicFile = f;
+                        musicFileIsTempFile = false;
                         musicInputStream = new FileInputStream(f);
 
                         MP3File mp3file = new MP3File(f);
@@ -448,26 +454,21 @@ public class HexapodSimulator extends JFrame {
                         ModelCreator.addInterval(rowIndex, musicInterval);
                         timeBarViewer1.setModel(ModelCreator.createModel());
                         timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
-
-                        /*advancedPlayer = new AdvancedPlayer(fis);
-                        advancedPlayer.setPlayBackListener(new PlaybackListener() {
-                        });*/
-                        //musicPlayer = new MusicPlayer(f);
-                        /*musicPlayer = new MusicPlayer(advancedPlayer);
-                        musicPlayer.start();*/
+                        projectChanged = true;
                     } catch (FileNotFoundException ex) {
                         System.out.println("File not found.");
                     } catch (TagException ex) {
                         System.out.println("Tag Exception while reading ID3 Tags.");
                     } catch (IOException ex) {
                         System.out.println("IO Exception while calculating Song Length.");
-                    }/* catch (JavaLayerException ex) {
-                    System.out.println("JavaLayerException while opening file.");
-                    }*/
+                    }
                     return;
                 }
 
                 if (e.getButton() == MouseEvent.BUTTON1) {  // leftclick
+                    if(row.getType().equals("music")) {
+                        return;
+                    }
                     tempInterval = ModelCreator.getInterval(rowIndex, intervalIndex);
                     tempRow = row;
                     try {
@@ -479,8 +480,7 @@ public class HexapodSimulator extends JFrame {
                     timeBarViewer1.setModel(ModelCreator.createModel());
                     timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
                 } else if (e.getButton() == MouseEvent.BUTTON3) {   // rightclick
-                    System.out.println(jPanel1.getRootPane().getParent().getName());
-                    SequenceTimebarDialog dialog = new SequenceTimebarDialog((Frame) jPanel1.getRootPane().getParent());
+                    SequenceTimebarDialog dialog = new SequenceTimebarDialog((Frame) jPanel1.getRootPane().getParent(), row.getType().equals("music") ? false : true);
                     JaretDate oldBeginDate = ModelCreator.getInterval(rowIndex, intervalIndex).getBegin();
                     dialog.setDate(oldBeginDate.getDate());
                     dialog.setLocation(100, 100);
@@ -492,6 +492,14 @@ public class HexapodSimulator extends JFrame {
                         ModelCreator.remInterval(rowIndex, intervalIndex);
                         timeBarViewer1.setModel(ModelCreator.createModel());
                         timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
+                        if(row.getType().equals("music")) {
+                            if(musicFileIsTempFile) {
+                                musicFile.delete();
+                            }
+                            musicFile = null;
+                            musicInputStream = null;
+                            return;
+                        }
                         try {
                             superSeq.delSeq(oldBeginDate.getMinutes() * 60000 + oldBeginDate.getSeconds() * 1000 + oldBeginDate.getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
                             projectChanged = true;
@@ -533,6 +541,9 @@ public class HexapodSimulator extends JFrame {
             public void mouseReleased(MouseEvent e) {
                 if (tempInterval != null) {
                     SequenceTimebarRowModel row = (SequenceTimebarRowModel) timeBarViewer1.rowForY(e.getY());
+                    if(row.getType().equals("music")) {
+                        return;
+                    }
                     int rowIndex = row.getID();
                     JaretDate oldBeginDate = tempInterval.getBegin();
                     long duration = tempInterval.getMillis();
@@ -594,18 +605,11 @@ public class HexapodSimulator extends JFrame {
                     System.out.println("IO Exception while writing properties file");
                     System.out.println(ex);
                 }
-                /*
-                try {
-                FileOutputStream file = new FileOutputStream("sequences.dat", false);
-                ObjectOutputStream os = new ObjectOutputStream(file);
-                os.writeObject(sequenceVector);
-                os.close();
-                } catch (FileNotFoundException ex) {
-                System.out.println("File not found.");
-                } catch (IOException ex) {
-                System.out.println("IO Exception (write)");
+                
+                if(musicFileIsTempFile) {
+                    musicFile.delete();
                 }
-                 */
+
                 // Run this on another thread than the AWT event queue to
                 // make sure the call to Animator.stop() completes before
                 // exiting
@@ -1310,6 +1314,11 @@ public class HexapodSimulator extends JFrame {
         if (musicPlayer != null) {
             musicPlayer.closePlayer();
             musicPlayer = null;
+            try {
+                musicInputStream = new FileInputStream(musicFile);
+            } catch (FileNotFoundException ex) {
+                System.out.println("Reopening: Music file not found!");
+            }
         }
 
         sequencePlayer.cancel();
@@ -1497,8 +1506,16 @@ public class HexapodSimulator extends JFrame {
         jScrollPane1.setViewportView(sequenceList);
 
         if (zipFile.getEntry("music") != null) {
-            musicInputStream = zipFile.getInputStream(zipFile.getEntry("music"));
-            //musicPlayer = new MusicPlayer(musicInputStream);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(zipFile.getInputStream(zipFile.getEntry("music")));
+            musicFile = File.createTempFile("hexisimTempMusicFile", null);
+            musicFileIsTempFile = true;
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(musicFile));
+            int buffer;
+            while((buffer = bufferedInputStream.read()) != -1) {
+                bufferedOutputStream.write(buffer);
+            }
+            bufferedOutputStream.close();
+            musicInputStream = new FileInputStream(musicFile);
         }
         zipFile.close();
 
@@ -1521,6 +1538,10 @@ public class HexapodSimulator extends JFrame {
         sequenceList.setDragEnabled(true);
         jScrollPane1.setViewportView(sequenceList);
         musicInputStream = null;
+        if(musicFileIsTempFile) {
+            musicFile.delete();
+        }
+        musicFile = null;
         setTitle("Hexapod Simulator");
         properties.projectFile = null;
         projectChanged = false;
@@ -1541,8 +1562,10 @@ public class HexapodSimulator extends JFrame {
             zipOutputStream.putNextEntry(music);
 
             int buffer;
-            while ((buffer = musicInputStream.read()) != -1) {
-                zipOutputStream.write(buffer);
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(zipOutputStream);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(musicInputStream);
+            while ((buffer = bufferedInputStream.read()) != -1) {
+                bufferedOutputStream.write(buffer);
             }
             zipOutputStream.closeEntry();
         }
