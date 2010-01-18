@@ -1,9 +1,4 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
  * SequenceTimebarDialog.java
  *
  * Created on 07.01.2010, 15:16:02
