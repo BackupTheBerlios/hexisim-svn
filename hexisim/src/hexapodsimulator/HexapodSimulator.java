@@ -716,6 +716,8 @@ public class HexapodSimulator extends JFrame {
         deleteButton = new JButton();
         playButton = new JButton();
         stopButton = new JButton();
+        jCheckBox7 = new JCheckBox();
+        bothCaptureButton = new JToggleButton();
         jMenuBar1 = new JMenuBar();
         fileMenu = new JMenu();
         openProjectMenuItem = new JMenuItem();
@@ -737,7 +739,7 @@ public class HexapodSimulator extends JFrame {
         panel3dModel.setLayout(panel3dModelLayout);
         panel3dModelLayout.setHorizontalGroup(
             panel3dModelLayout.createParallelGroup(GroupLayout.LEADING)
-            .add(0, 468, Short.MAX_VALUE)
+            .add(0, 518, Short.MAX_VALUE)
         );
         panel3dModelLayout.setVerticalGroup(
             panel3dModelLayout.createParallelGroup(GroupLayout.LEADING)
@@ -763,13 +765,13 @@ public class HexapodSimulator extends JFrame {
                     .add(kneeModeLabel)
                     .add(panelFemurTibiaLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(hintFemurTibia, GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)))
+                        .add(hintFemurTibia, GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         panelFemurTibiaLayout.setVerticalGroup(
             panelFemurTibiaLayout.createParallelGroup(GroupLayout.LEADING)
             .add(GroupLayout.TRAILING, panelFemurTibiaLayout.createSequentialGroup()
-                .addContainerGap(148, Short.MAX_VALUE)
+                .addContainerGap(150, Short.MAX_VALUE)
                 .add(hintFemurTibia)
                 .add(127, 127, 127)
                 .add(kneeModeLabel))
@@ -787,13 +789,13 @@ public class HexapodSimulator extends JFrame {
             panelCoxaLayout.createParallelGroup(GroupLayout.LEADING)
             .add(panelCoxaLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(hintCoxa, GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)
+                .add(hintCoxa, GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelCoxaLayout.setVerticalGroup(
             panelCoxaLayout.createParallelGroup(GroupLayout.LEADING)
             .add(GroupLayout.TRAILING, panelCoxaLayout.createSequentialGroup()
-                .addContainerGap(147, Short.MAX_VALUE)
+                .addContainerGap(148, Short.MAX_VALUE)
                 .add(hintCoxa)
                 .add(144, 144, 144))
         );
@@ -937,6 +939,22 @@ public class HexapodSimulator extends JFrame {
             }
         });
 
+        jCheckBox7.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                jCheckBox7ActionPerformed(evt);
+            }
+        });
+
+        bothCaptureButton.setText("Capture");
+        bothCaptureButton.setToolTipText("Capture both planes with (nearly) locked height");
+        bothCaptureButton.setEnabled(false);
+        bothCaptureButton.setVisible(false);
+        bothCaptureButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                bothCaptureButtonActionPerformed(evt);
+            }
+        });
+
         GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -944,7 +962,7 @@ public class HexapodSimulator extends JFrame {
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(timeBarViewer1, GroupLayout.DEFAULT_SIZE, 1207, Short.MAX_VALUE)
+                    .add(timeBarViewer1, GroupLayout.DEFAULT_SIZE, 1223, Short.MAX_VALUE)
                     .add(jPanel1Layout.createSequentialGroup()
                         .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
                             .add(jPanel1Layout.createSequentialGroup()
@@ -952,7 +970,7 @@ public class HexapodSimulator extends JFrame {
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(stopButton, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.UNRELATED)
-                                .add(rotationSlider, GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE))
+                                .add(rotationSlider, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE))
                             .add(panel3dModel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
@@ -988,9 +1006,14 @@ public class HexapodSimulator extends JFrame {
                         .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
                             .add(panelCoxa, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                             .add(jPanel1Layout.createSequentialGroup()
-                                .add(cCaptureButton)
+                                .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
+                                    .add(cCaptureButton)
+                                    .add(bothCaptureButton)
+                                    .add(jPanel1Layout.createSequentialGroup()
+                                        .add(12, 12, 12)
+                                        .add(jCheckBox7)))
                                 .add(24, 24, 24)
-                                .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
+                                .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(deleteButton)
                                 .add(28, 28, 28)))))
@@ -1016,7 +1039,7 @@ public class HexapodSimulator extends JFrame {
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
                             .add(deleteButton)
-                            .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
+                            .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 103, Short.MAX_VALUE)
                             .add(jPanel1Layout.createSequentialGroup()
                                 .add(jPanel1Layout.createParallelGroup(GroupLayout.BASELINE)
                                     .add(jCheckBox1)
@@ -1028,13 +1051,18 @@ public class HexapodSimulator extends JFrame {
                                     .add(ftCaptureButton)
                                     .add(cCaptureButton))
                                 .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jPanel1Layout.createParallelGroup(GroupLayout.BASELINE)
-                                    .add(jButton1)
-                                    .add(jButton2)
-                                    .add(jButton3)
-                                    .add(jButton4)
-                                    .add(jButton5)
-                                    .add(jButton6))))))
+                                .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
+                                    .add(jPanel1Layout.createParallelGroup(GroupLayout.BASELINE)
+                                        .add(jButton1)
+                                        .add(jButton2)
+                                        .add(jButton3)
+                                        .add(jButton4)
+                                        .add(jButton5)
+                                        .add(jButton6))
+                                    .add(jPanel1Layout.createSequentialGroup()
+                                        .add(jCheckBox7)
+                                        .addPreferredGap(LayoutStyle.RELATED)
+                                        .add(bothCaptureButton)))))))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(timeBarViewer1, GroupLayout.PREFERRED_SIZE, 252, GroupLayout.PREFERRED_SIZE)
                 .add(122, 122, 122))
@@ -1469,6 +1497,15 @@ public class HexapodSimulator extends JFrame {
         superSeq.interpolate = interpolateOutputCheckBoxMenuItem.getState() == true ? 1 : 0;
     }//GEN-LAST:event_interpolateOutputCheckBoxMenuItemActionPerformed
 
+    private void jCheckBox7ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jCheckBox7ActionPerformed
+        GLRendererCoxa.checkBox = jCheckBox7.isSelected();
+        bothCaptureButton.setEnabled(jCheckBox7.isSelected());
+    }//GEN-LAST:event_jCheckBox7ActionPerformed
+
+    private void bothCaptureButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_bothCaptureButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_bothCaptureButtonActionPerformed
+
     private HexiSequenz getSequenceByName(String name) {
         HexiSequenz seq = null;
         for (int i = 0; i < sequenceVector.size(); i++) {
@@ -1641,6 +1678,7 @@ public class HexapodSimulator extends JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JToggleButton bothCaptureButton;
     private JToggleButton cCaptureButton;
     private JMenuItem closeProjectMenuItem;
     private JButton deleteButton;
@@ -1663,6 +1701,7 @@ public class HexapodSimulator extends JFrame {
     private JCheckBox jCheckBox4;
     private JCheckBox jCheckBox5;
     private JCheckBox jCheckBox6;
+    private JCheckBox jCheckBox7;
     private JMenuBar jMenuBar1;
     private JPanel jPanel1;
     private JScrollPane jScrollPane1;

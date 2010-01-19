@@ -36,6 +36,11 @@ public class GLRendererCoxa implements GLEventListener, MouseMotionListener {
         if (angle < -45 || angle > 45) {    // angle is out of range
             angle = angle > 0 ? 45 : -45;
         }
+
+        if(checkBox){
+            double l = 0.8+Math.hypot(mx, my - 0.1);
+            GLRendererFemurTibia.moveAnglesToXY(l, GLRendererFemurTibia.getY() + 1);
+        }
     }
 
     public void mouseMoved(MouseEvent e) {
@@ -102,6 +107,7 @@ public class GLRendererCoxa implements GLEventListener, MouseMotionListener {
     public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {
     }
     public static double angle;
+    public static boolean checkBox;
 
     public void update2dLocs(double[][] joint) {
         double b = GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0]));

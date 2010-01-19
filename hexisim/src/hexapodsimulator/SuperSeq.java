@@ -159,11 +159,11 @@ public class SuperSeq implements Serializable {
      */
     public double getSingleElementAtTime(int time, int leg, int angle) {
         if (getSeqCnt(leg, (angle == 0) ? 1 : 0) < 1) {
-            return angle == 0 ? 0. : 45.;//Ÿ0
+            return angle == 0 ? 0. : 45.;//ï¿½0
         }
         if (time < getTimePosOfSeq(leg, (angle == 0) ? 1 : 0, 0)) {
             if (interpolate == 0) {
-                return angle == 0 ? 0. : 45.;//Ÿ0
+                return angle == 0 ? 0. : 45.;//ï¿½0
             } else if (interpolate == 1) {
                 //TO-DO interpolieren // Update - sollte gehen, testen
                 return interpolate(0.,
@@ -234,8 +234,16 @@ public class SuperSeq implements Serializable {
         throw new UnknownError("Anscheinend wurde kein passendes Element gefunden.");
     }
 
+    /**
+     * Interpolates linear point between 2 1-dimensional values
+     * @param d1 First Interpolation value
+     * @param d2 Second Interpolation value
+     * @param verh intended percentage
+     * @return d1 + (d2 - d1) * verh
+     */
     public static double interpolate(double d1, double d2, double verh) {
         return d1 + (d2 - d1) * verh;
+        //Besser?: d2 + d1 (1 - verh) â€“ egal, ergibt das selbe
     }
 
     /**
