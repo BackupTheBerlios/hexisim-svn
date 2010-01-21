@@ -19,16 +19,18 @@ public class HexapodSimulatorProjectDataPart implements Serializable {
     private SuperSeq _superSeq;
     private Vector<HexiSequenz> _sequences;
     private Vector<Vector<EventInterval>> _intervals;
+    private Vector<Vector<int[]>> _intervalCombinations;
 
-    public HexapodSimulatorProjectDataPart(String name, SuperSeq superSeq, Vector<HexiSequenz> sequences, Vector<Vector<EventInterval>> intervals) {
+    public HexapodSimulatorProjectDataPart(String name, SuperSeq superSeq, Vector<HexiSequenz> sequences, Vector<Vector<EventInterval>> intervals, Vector<Vector<int[]>> intervalCombinations) {
         _name = name;
         _superSeq = superSeq;
         _sequences = sequences;
         _intervals = intervals;
+        _intervalCombinations = intervalCombinations;
     }
 
-    public HexapodSimulatorProjectDataPart(SuperSeq superSeq, Vector<HexiSequenz> sequences, Vector<Vector<EventInterval>> intervals) {
-        this(null, superSeq, sequences, intervals);
+    public HexapodSimulatorProjectDataPart(SuperSeq superSeq, Vector<HexiSequenz> sequences, Vector<Vector<EventInterval>> intervals, Vector<Vector<int[]>> intervalCombinations) {
+        this(null, superSeq, sequences, intervals, intervalCombinations);
     }
 
     public HexapodSimulatorProjectDataPart() {
@@ -64,5 +66,13 @@ public class HexapodSimulatorProjectDataPart implements Serializable {
 
     public void setIntervals(Vector<Vector<EventInterval>> intervals) {
         _intervals = intervals;
+    }
+
+    public Vector<Vector<int[]>> getIntervalCombinations() {
+        return _intervalCombinations;
+    }
+
+    public void setIntervalCombinations(Vector<Vector<int[]>> intervalCombinations) {
+        _intervalCombinations = intervalCombinations;
     }
 }

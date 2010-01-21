@@ -4,6 +4,7 @@ import de.jaret.util.date.JaretDate;
 import de.jaret.util.ui.timebars.model.DefaultRowHeader;
 import de.jaret.util.ui.timebars.model.DefaultTimeBarModel;
 import de.jaret.util.ui.timebars.model.TimeBarModel;
+import hexapodsimulator.DeepObjectCopy;
 import java.util.Vector;
 
 /**
@@ -15,6 +16,11 @@ import java.util.Vector;
 public class ModelCreator {
 
     private static Vector<Vector<EventInterval>> intervals = new Vector<Vector<EventInterval>>(13); // 2x6 leg, 1 music
+    private static Vector<Vector<int[]>> intervalCombinations = new Vector<Vector<int[]>>();
+
+    // commited:
+    private static Vector<Vector<EventInterval>> savedIntervals = new Vector<Vector<EventInterval>>(13);
+    private static Vector<Vector<int[]>> savedIntervalCombinations = new Vector<Vector<int[]>>();
 
     private static void initializeVector() {
         for (int i = 0; i < intervals.capacity(); i++) {
@@ -23,7 +29,7 @@ public class ModelCreator {
     }
 
     /**
-     * Adds an interval to the Vector
+     * Adds an interval to the Vector<br>
      * After the interval had been added, the model has to be recreated with the createModel Method
      * @param row The row to add the interval to
      * @param interval The interval to add
@@ -39,13 +45,45 @@ public class ModelCreator {
                 return -1;
             }
         }
-        /*for (int i = 0; i < intervals.elementAt(row).size(); i++) {
-        if(intervals.elementAt(row).elementAt(i).getBegin().getDate().after(interval.getBegin().getDate())
-        && intervals.elementAt(row).elementAt(i).getEnd().getDate().before(interval.getEnd().getDate()))
-        return;
-        }*/
         intervals.elementAt(row).add(interval);
         return 0;
+    }
+
+    /**
+     * Creates a combination between the two defined intervals.
+     * If the first interval is already part of a combination,
+     * the second interval will be added to this combination.
+     * @param row1 Row of the first interval
+     * @param index1 Index of the first interval
+     * @param row2 Row of the second interval
+     * @param index2 Index of the second interval
+     */
+    public static void combineIntervals(int row1, int index1, int row2, int index2) {
+        if(getCombinationIndex(row2, index2) != -1) {
+            return;
+        }
+        boolean elementAdded = false;
+        for (int i = 0; i < intervalCombinations.size(); i++) {
+            for (int j = 0; j < intervalCombinations.elementAt(i).size(); j++) {
+                int[] intervalIndex = intervalCombinations.elementAt(i).elementAt(j);
+                if (intervalIndex[0] == row1 && intervalIndex[1] == index1) {
+                    int[] newIntervalIndex = new int[2];
+                    newIntervalIndex[0] = row2;
+                    newIntervalIndex[1] = index2;
+                    intervalCombinations.elementAt(i).add(newIntervalIndex);
+                    elementAdded = true;
+                    break;
+                }
+            }
+        }
+        if (!elementAdded) {
+            int[] newIntervalIndex = new int[2];
+            newIntervalIndex[0] = row1;
+            newIntervalIndex[1] = index1;
+            intervalCombinations.add(new Vector<int[]>());
+            intervalCombinations.lastElement().add(newIntervalIndex);
+            combineIntervals(row1, index1, row2, index2);
+        }
     }
 
     /**
@@ -59,6 +97,40 @@ public class ModelCreator {
     }
 
     /**
+     * Returns a vector containing all intervals that are combined
+     * with the specified interval.
+     * @param row The row to search for the given interval
+     * @param index The index of the given interval
+     * @return A vector with EventInterval objects or null if the specified interval
+     * is not part of a combination
+     */
+    public static Vector<EventInterval> getCombinedIntervals(int row, int index) {
+        Vector<EventInterval> combinedIntervals = new Vector<EventInterval>();
+        int combinationIndex = getCombinationIndex(row, index);
+        if (combinationIndex == -1) {
+            return null;
+        }
+        for (int i = 0; i < intervalCombinations.elementAt(combinationIndex).size(); i++) {
+            int[] intervalIndex = intervalCombinations.elementAt(combinationIndex).elementAt(i);
+            combinedIntervals.add(getInterval(intervalIndex[0], intervalIndex[1]));
+        }
+        return combinedIntervals;
+    }
+
+    public static Vector<Integer> getCombinedIntervalRows(int row, int index) {
+        Vector <Integer> combinedIntervalRows = new Vector<Integer>();
+        int combinationIndex = getCombinationIndex(row, index);
+        if (combinationIndex == -1) {
+            return null;
+        }
+        for (int i = 0; i < intervalCombinations.elementAt(combinationIndex).size(); i++) {
+            int[] intervalIndex = intervalCombinations.elementAt(combinationIndex).elementAt(i);
+            combinedIntervalRows.add(intervalIndex[0]);
+        }
+        return combinedIntervalRows;
+    }
+
+    /**
      * Returns the interval that is active at the specified date.
      * This means that the specified date needs not to be the start date of the required interval.
      * @param row The row to search for the interval
@@ -68,18 +140,28 @@ public class ModelCreator {
     public static EventInterval getIntervalAtDate(int row, JaretDate date) {
         EventInterval searchInterval = new EventInterval(date, date);
         for (int i = 0; i < intervals.elementAt(row).size(); i++) {
-            if(intervals.elementAt(row).elementAt(i).intersects(searchInterval))
+            if (intervals.elementAt(row).elementAt(i).intersects(searchInterval)) {
                 return intervals.elementAt(row).elementAt(i);
+            }
         }
         return null;
     }
 
     /**
      * Returns a Vector containing all intervals
-     * @return intervals Interval vector: consists of 13 vectors that contain the intervals of each row
+     * @return Interval vector: consists of 13 vectors that contain the intervals of each row
      */
-    public static Vector<Vector<EventInterval>> getIntervals() {
+    public static Vector<Vector<EventInterval>> getAllIntervals() {
         return intervals;
+    }
+
+    /**
+     * Returns the vector that represents combinations of intervals in the interval vector
+     * @return A vector consisting of one vector per combination which contains the indices of the interval vector
+     * @see getAllIntervals(), setIntervals()
+     */
+    public static Vector<Vector<int[]>> getAllIntervallCombinations() {
+        return intervalCombinations;
     }
 
     /**
@@ -91,17 +173,46 @@ public class ModelCreator {
     }
 
     /**
-     * Removes an interval from the Vector of a row
+     * Sets the vector that represents combinations of intervals in the interval vector
+     * @param intervalCombinations A vector consisting of one vector per combination which contains the indices of the interval vector
+     * @see getAllIntervals, setIntervals
+     */
+    public static void setIntervalCombinations(Vector<Vector<int[]>> intervalCombinations) {
+        ModelCreator.intervalCombinations = intervalCombinations;
+    }
+
+    /**
+     * Removes an interval from the Vector of a row.<br>
+     * If the selected interval is part of a combination,
+     * all other intervals of the combination are also deleted.<br>
      * After the interval had been removed, the model has to be recreated with the createModel Method
      * @param row The row where an interval should be removed
      * @param index The index of the interval to remove
      */
     public static void remInterval(int row, int index) {
-        intervals.elementAt(row).remove(index);
+        int combinationIndex = getCombinationIndex(row, index);
+        if (combinationIndex == -1) {
+            intervals.elementAt(row).remove(index);
+        } else {
+            for (int i = 0; i < intervalCombinations.elementAt(combinationIndex).size(); i++) {
+                intervals.elementAt(intervalCombinations.elementAt(combinationIndex).elementAt(i)[0]).remove(intervalCombinations.elementAt(combinationIndex).elementAt(i)[1]);
+                for (int j = 0; j < intervalCombinations.size(); j++) {
+                    for (int k = 0; k < intervalCombinations.elementAt(j).size(); k++) {
+                        int[] intervalIndex = intervalCombinations.elementAt(j).elementAt(k);
+                        if (intervalIndex[0] == intervalCombinations.elementAt(combinationIndex).elementAt(i)[0]
+                                && intervalIndex[1] > intervalCombinations.elementAt(combinationIndex).elementAt(i)[1]) {
+                            intervalIndex[1]--;
+                        }
+                    }
+                }
+            }
+            intervalCombinations.remove(combinationIndex);
+        }
     }
 
     /**
      * Removes all intervals with the specified name
+     * and all intervals that are combined with one of these intervals.
      * @param name The name of the intervals that should be removed
      */
     public static void remInterval(String name) {
@@ -112,7 +223,9 @@ public class ModelCreator {
                     elementsToDelete.add(intervals.elementAt(i).elementAt(j));
                 }
             }
-            intervals.elementAt(i).removeAll(elementsToDelete);
+            for (int j = 0; j < elementsToDelete.size(); j++) {
+                remInterval(i, getIntervalIndexAtDate(i, elementsToDelete.elementAt(j).getBegin()));
+            }
         }
     }
 
@@ -175,13 +288,42 @@ public class ModelCreator {
         return (SequenceTimebarRowModel) createModel().getRow(index);
     }
 
+    private static int getCombinationIndex(int row, int index) {
+        for (int i = 0; i < intervalCombinations.size(); i++) {
+            for (int j = 0; j < intervalCombinations.elementAt(i).size(); j++) {
+                int[] intervalIndex = intervalCombinations.elementAt(i).elementAt(j);
+                if (intervalIndex[0] == row && intervalIndex[1] == index) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Saves the changes made to the interval vector.
+     * This allows to revert this state later.
+     */
+    public static void saveChanges() {
+        savedIntervals = (Vector<Vector<EventInterval>>)DeepObjectCopy.getDeepCopy(intervals);
+        savedIntervalCombinations = (Vector<Vector<int[]>>)DeepObjectCopy.getDeepCopy(intervalCombinations);
+    }
+
+    /**
+     * Reverts the changes made to the interval vector
+     * since the last call of saveChanges.
+     */
+    public static void revertChanges() {
+        intervals = (Vector<Vector<EventInterval>>)DeepObjectCopy.getDeepCopy(savedIntervals);
+        intervalCombinations = (Vector<Vector<int[]>>)DeepObjectCopy.getDeepCopy(savedIntervalCombinations);
+    }
+
     /**
      * Creates a TimeBarModel with the intervals from the interval vector
      * Intervals can be added with the <a>addInterval</a> method
      * @return The model
      */
     public static TimeBarModel createModel() {
-
         DefaultTimeBarModel model = new DefaultTimeBarModel();
         DefaultRowHeader header;
         SequenceTimebarRowModel rowModel;

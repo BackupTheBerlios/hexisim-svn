@@ -163,33 +163,12 @@ public class HexapodSimulator extends JFrame {
                 panelFemurTibia.repaint();
                 panelCoxa.repaint();
 
-                if (ftCaptureButton.isSelected()) {
-                    /*double[] prevAngle = new double[2];
-                    if (ftSequence.getLength() > 0) {
-                        prevAngle = ftSequence.getAngle(ftSequence.getLength() - 1).clone();
-                    }*/
-
-                    /*if (ftSequence.getLength() > 0
-                            && prevAngle[0] != GLRendererFemurTibia.angle[0]
-                            && prevAngle[1] != GLRendererFemurTibia.angle[1]
-                            || ftSequence.getLength() == 0) {*/
-                        ftSequence.addContent(GLRendererFemurTibia.angle[0], GLRendererFemurTibia.angle[1]);
-                        //System.out.println(GLRendererFemurTibia.angle[0] + ", " + GLRendererFemurTibia.angle[1]);
-                    //}
-                    //System.out.println(ftSequence);
+                if (ftCaptureButton.isSelected() || bothCaptureButton.isSelected()) {
+                    ftSequence.addContent(GLRendererFemurTibia.angle[0], GLRendererFemurTibia.angle[1]);
                 }
 
-                if (cCaptureButton.isSelected()) {
-                    /*double prevAngle[] = new double[2];
-                    if (cSequence.getLength() > 0) {
-                        prevAngle = cSequence.getAngle(cSequence.getLength() - 1).clone();
-                    }
-
-                    if (cSequence.getLength() > 0
-                            && prevAngle[0] != GLRendererCoxa.angle
-                            || cSequence.getLength() == 0) {*/
-                        cSequence.addContent(GLRendererCoxa.angle, 0);
-                    //}
+                if (cCaptureButton.isSelected() || bothCaptureButton.isSelected()) {
+                    cSequence.addContent(GLRendererCoxa.angle, 0);
                 }
             }
         };
@@ -248,9 +227,39 @@ public class HexapodSimulator extends JFrame {
                     SequenceTimebarRowModel row = ((SequenceTimebarRowModel) timeBarViewer1.getRowForXY(loc.x, loc.y));
                     int seconds = timeBarViewer1.dateForXY(loc.x, loc.y).diffSeconds(new JaretDate(1, 1, 1970, 1, 0, 0));
                     int milliseconds = timeBarViewer1.dateForXY(loc.x, loc.y).getMillis();
-                    if (!row.getType().equals(name.split("_")[0])) {    //right type? (ft/c)
+                    String namePrefix = name.split("_")[0];
+                    if (!row.getType().equals(namePrefix) && !namePrefix.equals("combft") /*&& !namePrefix.equals("combc")*/) {    //right type? (ft/c)
                         timeBarViewer1.deHighlightRow();
                         dtde.rejectDrop();
+                    } else if (namePrefix.equals("combft") /*|| namePrefix.equals("combc")*/) {
+                        seconds = (seconds < 0) ? 0 : seconds;
+                        JaretDate begin = new JaretDate(0);
+                        begin.advanceSeconds(seconds).advanceMillis(milliseconds);
+                        EventInterval interval1 = new EventInterval(begin.copy(), begin.copy().advanceMillis(getSequenceByName(name).getTime()));
+                        interval1.setTitle(name);
+                        String name2 = namePrefix.equals("combft")
+                                ? "combc_" + name.substring(namePrefix.length() + 1)
+                                : "combft_" + name.substring(namePrefix.length() + 1);
+                        EventInterval interval2 = new EventInterval(begin.copy(), begin.copy().advanceMillis(getSequenceByName(name2).getTime()));
+                        interval2.setTitle(name2);
+                        if (ModelCreator.addInterval(row.getID(), interval1) == -1) {
+                            timeBarViewer1.deHighlightRow();
+                            dtde.rejectDrop();
+                            return;
+                        }
+                        if (ModelCreator.addInterval(row.getID() + 1, interval2) == -1) {
+                            timeBarViewer1.deHighlightRow();
+                            dtde.rejectDrop();
+                            return;
+                        }
+                        ModelCreator.combineIntervals(row.getID(), ModelCreator.getIntervalIndexAtDate(row.getID(), begin), row.getID() + 1, ModelCreator.getIntervalIndexAtDate(row.getID() + 1, begin));
+                        ModelCreator.saveChanges();
+                        timeBarViewer1.setModel(ModelCreator.createModel());
+                        superSeq.addSeq(getSequenceByName(name), seconds * 1000 + milliseconds, row.getSecID(), 0);
+                        superSeq.addSeq(getSequenceByName(name2), seconds * 1000 + milliseconds, row.getSecID(), 1);
+                        dtde.acceptDrop(dtde.getDropAction());
+                        dtde.dropComplete(true);
+                        projectChanged = true;
                     } else {
                         seconds = (seconds < 0) ? 0 : seconds;
                         JaretDate begin = new JaretDate(0);
@@ -262,19 +271,7 @@ public class HexapodSimulator extends JFrame {
                             dtde.rejectDrop();
                         } else {
                             superSeq.addSeq(getSequenceByName(name), seconds * 1000 + milliseconds, row.getSecID(), (row.getType().equals("ft") ? 0 : 1));
-                            /*for (int abc = 0; abc < 90000; abc++) {
-                            try {
-                            System.out.print(superSeq.getSingleElementAtTime(abc, 0, 1) + ", ");
-                            } catch (Exception ex) {
-                            System.out.println(ex);
-                            }
-                            }*/
-                            /*
-                            try {
-                            superSeq.angletofile("angles.txt");
-                            } catch (Exception ex) {
-                            System.out.println("error");
-                            }*/
+                            ModelCreator.saveChanges();
                             timeBarViewer1.setModel(ModelCreator.createModel());
                             dtde.acceptDrop(dtde.getDropAction());
                             dtde.dropComplete(true);
@@ -304,7 +301,8 @@ public class HexapodSimulator extends JFrame {
             @Override
             public void dragOver(DropTargetDragEvent dtde) {
                 try {
-                    if (((String) dtde.getTransferable().getTransferData(DataFlavor.stringFlavor)).split("_")[0].equals("ft")) {
+                    String prefix = ((String) dtde.getTransferable().getTransferData(DataFlavor.stringFlavor)).split("_")[0];
+                    if (prefix.equals("ft") || prefix.equals("combft")) {
                         hintFemurTibia.setVisible(true);
                     }
                 } catch (UnsupportedFlavorException ex) {
@@ -317,7 +315,7 @@ public class HexapodSimulator extends JFrame {
             public void drop(DropTargetDropEvent dtde) {
                 try {
                     String name = (String) dtde.getTransferable().getTransferData(DataFlavor.stringFlavor);
-                    if (!name.split("_")[0].equals("ft")) {
+                    if (!name.split("_")[0].equals("ft") && !name.split("_")[0].equals("combft")) {
                         dtde.rejectDrop();
                         return;
                     }
@@ -361,7 +359,8 @@ public class HexapodSimulator extends JFrame {
             @Override
             public void dragOver(DropTargetDragEvent dtde) {
                 try {
-                    if (((String) dtde.getTransferable().getTransferData(DataFlavor.stringFlavor)).split("_")[0].equals("c")) {
+                    String prefix = ((String) dtde.getTransferable().getTransferData(DataFlavor.stringFlavor)).split("_")[0];
+                    if (prefix.equals("c") || prefix.equals("combc")) {
                         hintCoxa.setVisible(true);
                     }
                 } catch (UnsupportedFlavorException ex) {
@@ -374,7 +373,7 @@ public class HexapodSimulator extends JFrame {
             public void drop(DropTargetDropEvent dtde) {
                 try {
                     String name = (String) dtde.getTransferable().getTransferData(DataFlavor.stringFlavor);
-                    if (!name.split("_")[0].equals("c")) {
+                    if (!name.split("_")[0].equals("c") && !name.split("_")[0].equals("combc")) {
                         dtde.rejectDrop();
                         return;
                     }
@@ -410,7 +409,10 @@ public class HexapodSimulator extends JFrame {
         timeBarViewer1.addMouseListener(new MouseListener() {
 
             private EventInterval tempInterval = null;
+            private Vector<EventInterval> tempCombinedIntervals;
+            private Vector<Integer> tempCombinedIntervalRows;
             private SequenceTimebarRowModel tempRow = null;
+            private SuperSeq tempSuperSeq;
 
             public void mouseClicked(MouseEvent e) {
             }
@@ -451,6 +453,7 @@ public class HexapodSimulator extends JFrame {
                         EventInterval musicInterval = new EventInterval(begin.copy(), begin.copy().advanceMillis(songLength));
                         musicInterval.setTitle(artist + " - " + songTitle);
                         ModelCreator.addInterval(rowIndex, musicInterval);
+                        ModelCreator.saveChanges();
                         timeBarViewer1.setModel(ModelCreator.createModel());
                         timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
                         projectChanged = true;
@@ -465,15 +468,25 @@ public class HexapodSimulator extends JFrame {
                 }
 
                 if (e.getButton() == MouseEvent.BUTTON1) {  // leftclick
-                    if(row.getType().equals("music")) {
+                    if (row.getType().equals("music")) {
                         return;
                     }
                     tempInterval = ModelCreator.getInterval(rowIndex, intervalIndex);
+                    tempCombinedIntervals = ModelCreator.getCombinedIntervals(rowIndex, intervalIndex);
+                    tempCombinedIntervalRows = ModelCreator.getCombinedIntervalRows(rowIndex, intervalIndex);
                     tempRow = row;
+                    tempSuperSeq = (SuperSeq) DeepObjectCopy.getDeepCopy(superSeq);
                     try {
-                        superSeq.delSeq(tempInterval.getBegin().getMinutes() * 60000 + tempInterval.getBegin().getSeconds() * 1000 + tempInterval.getBegin().getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                        if (tempCombinedIntervals == null) {
+                            superSeq.delSeq(tempInterval.getBegin().getMinutes() * 60000 + tempInterval.getBegin().getSeconds() * 1000 + tempInterval.getBegin().getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                        } else {
+                            for (int i = 0; i < tempCombinedIntervals.size(); i++) {
+                                EventInterval interval = tempCombinedIntervals.elementAt(i);
+                                superSeq.delSeq(interval.getBegin().getMinutes() * 60000 + interval.getBegin().getSeconds() * 1000 + interval.getBegin().getMillis(), tempCombinedIntervalRows.elementAt(i) / 2, tempCombinedIntervalRows.elementAt(i) % 2);
+                            }
+                        }
                     } catch (Exception ex) {
-                        System.out.println(ex);
+                        ex.printStackTrace();
                     }
                     ModelCreator.remInterval(rowIndex, intervalIndex);
                     timeBarViewer1.setModel(ModelCreator.createModel());
@@ -487,60 +500,115 @@ public class HexapodSimulator extends JFrame {
                     if (dialog.getCancelled() || dialog.getDate() == null) {
                         return;
                     }
+                    Vector<EventInterval> combinedIntervals = ModelCreator.getCombinedIntervals(rowIndex, intervalIndex);
+                    Vector<Integer> combinedIntervalRows = ModelCreator.getCombinedIntervalRows(rowIndex, intervalIndex);
                     if (dialog.getDeleted()) {
                         ModelCreator.remInterval(rowIndex, intervalIndex);
+                        ModelCreator.saveChanges();
                         timeBarViewer1.setModel(ModelCreator.createModel());
                         timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
-                        if(row.getType().equals("music")) {
-                            if(musicFileIsTempFile) {
+                        if (row.getType().equals("music")) {
+                            if (musicFileIsTempFile) {
                                 musicFile.delete();
                             }
                             musicFile = null;
+                            musicFileIsTempFile = false;
                             musicInputStream = null;
                             return;
                         }
                         try {
-                            superSeq.delSeq(oldBeginDate.getMinutes() * 60000 + oldBeginDate.getSeconds() * 1000 + oldBeginDate.getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                            if (combinedIntervals == null) {
+                                superSeq.delSeq(oldBeginDate.getMinutes() * 60000 + oldBeginDate.getSeconds() * 1000 + oldBeginDate.getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                            } else {
+                                for (int i = 0; i < combinedIntervals.size(); i++) {
+                                    EventInterval interval = combinedIntervals.elementAt(i);
+                                    superSeq.delSeq(interval.getBegin().getMinutes() * 60000 + interval.getBegin().getSeconds() * 1000 + interval.getBegin().getMillis(), combinedIntervalRows.elementAt(i) / 2, combinedIntervalRows.elementAt(i) % 2);
+                                }
+                            }
                             projectChanged = true;
                         } catch (Exception ex) {
-                            System.out.println(ex);
+                            ex.printStackTrace();
                         }
                         return;
                     }
                     JaretDate newBeginDate = new JaretDate(dialog.getDate());
 
+                    tempSuperSeq = (SuperSeq) DeepObjectCopy.getDeepCopy(superSeq);
                     tempInterval = ModelCreator.getInterval(rowIndex, intervalIndex);
+                    tempCombinedIntervals = ModelCreator.getCombinedIntervals(rowIndex, intervalIndex);
+                    tempCombinedIntervalRows = ModelCreator.getCombinedIntervalRows(rowIndex, intervalIndex);
                     ModelCreator.remInterval(rowIndex, intervalIndex);
                     try {
-                        superSeq.delSeq(oldBeginDate.getMinutes() * 60000 + oldBeginDate.getSeconds() * 1000 + oldBeginDate.getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                        //superSeq.delSeq(oldBeginDate.getMinutes() * 60000 + oldBeginDate.getSeconds() * 1000 + oldBeginDate.getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                        if (combinedIntervals == null) {
+                            superSeq.delSeq(oldBeginDate.getMinutes() * 60000 + oldBeginDate.getSeconds() * 1000 + oldBeginDate.getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                        } else {
+                            for (int i = 0; i < combinedIntervals.size(); i++) {
+                                EventInterval interval = combinedIntervals.elementAt(i);
+                                superSeq.delSeq(interval.getBegin().getMinutes() * 60000 + interval.getBegin().getSeconds() * 1000 + interval.getBegin().getMillis(), combinedIntervalRows.elementAt(i) / 2, combinedIntervalRows.elementAt(i) % 2);
+                            }
+                        }
                     } catch (Exception ex) {
                         System.out.println(ex);
                     }
                     long duration = tempInterval.getMillis();
                     tempInterval.setBegin(newBeginDate);
                     tempInterval.setEnd(newBeginDate.copy().advanceMillis(duration));
-                    if (ModelCreator.addInterval(rowIndex, tempInterval) != -1) {
-                        superSeq.addSeq(getSequenceByName(tempInterval.getTitle()), newBeginDate.getMinutes() * 60000 + newBeginDate.getSeconds() * 1000 + newBeginDate.getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                    if (tempCombinedIntervals != null) {
+                        boolean successful = true;
+                        for (int i = 0; i < tempCombinedIntervals.size(); i++) {
+                            EventInterval interval = tempCombinedIntervals.elementAt(i);
+                            long intervalDuration = interval.getMillis();
+                            interval.setBegin(/*interval.getBegin().copy().advanceMillis(begin.getDate().getTime() - oldBeginDate.getDate().getTime())*/tempInterval.getBegin()); // TODO calculate individual start date
+                            interval.setEnd(interval.getBegin().advanceMillis(intervalDuration));
+                            if (ModelCreator.addInterval(tempCombinedIntervalRows.elementAt(i), interval) == -1) {
+                                successful = false;
+                            }
+                            if (i > 0) {
+                                // Here comes the longest line in the program ^^
+                                ModelCreator.combineIntervals(tempCombinedIntervalRows.firstElement(), ModelCreator.getIntervalIndexAtDate(tempCombinedIntervalRows.firstElement(), tempInterval.getBegin()), tempCombinedIntervalRows.elementAt(i), ModelCreator.getIntervalIndexAtDate(tempCombinedIntervalRows.elementAt(i), tempInterval.getBegin()));
+                            }
+                        }
+                        if (successful) {
+                            ModelCreator.saveChanges();
+                            for (int i = 0; i < tempCombinedIntervals.size(); i++) {
+                                EventInterval interval = tempCombinedIntervals.elementAt(i);
+                                superSeq.addSeq(getSequenceByName(interval.getTitle()), newBeginDate.getMinutes() * 60000 + newBeginDate.getSeconds() * 1000 + newBeginDate.getMillis(), tempCombinedIntervalRows.elementAt(i) / 2, tempCombinedIntervalRows.elementAt(i) % 2); // TODO calculate individual start date
+                            }
+                        } else {
+                            ModelCreator.revertChanges();
+                            superSeq = tempSuperSeq;
+                        }
                         timeBarViewer1.setModel(ModelCreator.createModel());
                         timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
                         projectChanged = true;
                     } else {
-                        tempInterval.setBegin(oldBeginDate);
-                        tempInterval.setEnd(oldBeginDate.copy().advanceMillis(duration));
-                        ModelCreator.addInterval(rowIndex, tempInterval);
-                        superSeq.addSeq(getSequenceByName(tempInterval.getTitle()), oldBeginDate.getMinutes() * 60000 + oldBeginDate.getSeconds() * 1000 + oldBeginDate.getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
-                        timeBarViewer1.setModel(ModelCreator.createModel());
-                        timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
+                        if (ModelCreator.addInterval(rowIndex, tempInterval) != -1) {
+                            superSeq.addSeq(getSequenceByName(tempInterval.getTitle()), newBeginDate.getMinutes() * 60000 + newBeginDate.getSeconds() * 1000 + newBeginDate.getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                            timeBarViewer1.setModel(ModelCreator.createModel());
+                            timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
+                            projectChanged = true;
+                        } else {
+                            tempInterval.setBegin(oldBeginDate);
+                            tempInterval.setEnd(oldBeginDate.copy().advanceMillis(duration));
+                            //ModelCreator.addInterval(rowIndex, tempInterval);
+                            //superSeq.addSeq(getSequenceByName(tempInterval.getTitle()), oldBeginDate.getMinutes() * 60000 + oldBeginDate.getSeconds() * 1000 + oldBeginDate.getMillis(), row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                            superSeq = tempSuperSeq;
+                            ModelCreator.revertChanges();
+                            timeBarViewer1.setModel(ModelCreator.createModel());
+                            timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
+                        }
                     }
 
                     tempInterval = null;
+                    tempCombinedIntervals = null;
                 }
             }
 
             public void mouseReleased(MouseEvent e) {
                 if (tempInterval != null) {
                     SequenceTimebarRowModel row = (SequenceTimebarRowModel) timeBarViewer1.rowForY(e.getY());
-                    if(row.getType().equals("music")) {
+                    if (row.getType().equals("music")) {
                         return;
                     }
                     int rowIndex = row.getID();
@@ -554,24 +622,56 @@ public class HexapodSimulator extends JFrame {
 
                     tempInterval.setBegin(begin);
                     tempInterval.setEnd(begin.copy().advanceMillis(duration));
-
-                    if (ModelCreator.addInterval(rowIndex, tempInterval) != -1
-                            && row.getType().equals(tempRow.getType())) {
-                        superSeq.addSeq(getSequenceByName(tempInterval.getTitle()), seconds * 1000 + milliseconds, row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                    if (tempCombinedIntervals != null) {
+                        boolean successful = true;
+                        for (int i = 0; i < tempCombinedIntervals.size(); i++) {
+                            EventInterval interval = tempCombinedIntervals.elementAt(i);
+                            long intervalDuration = interval.getMillis();
+                            interval.setBegin(/*interval.getBegin().copy().advanceMillis(begin.getDate().getTime() - oldBeginDate.getDate().getTime())*/begin); // TODO calculate individual start date
+                            interval.setEnd(interval.getBegin().advanceMillis(intervalDuration));
+                            if (ModelCreator.addInterval(tempCombinedIntervalRows.elementAt(i) + rowIndex - tempRow.getID(), interval) == -1) {
+                                successful = false;
+                            }
+                            if (i > 0) {
+                                // Here comes the longest line in the program ^^
+                                ModelCreator.combineIntervals(tempCombinedIntervalRows.firstElement() + rowIndex - tempRow.getID(), ModelCreator.getIntervalIndexAtDate(tempCombinedIntervalRows.firstElement() + rowIndex - tempRow.getID(), tempInterval.getBegin()), tempCombinedIntervalRows.elementAt(i) + rowIndex - tempRow.getID(), ModelCreator.getIntervalIndexAtDate(tempCombinedIntervalRows.elementAt(i) + rowIndex - tempRow.getID(), tempInterval.getBegin()));
+                            }
+                        }
+                        if (successful) {
+                            ModelCreator.saveChanges();
+                            for (int i = 0; i < tempCombinedIntervals.size(); i++) {
+                                EventInterval interval = tempCombinedIntervals.elementAt(i);
+                                superSeq.addSeq(getSequenceByName(interval.getTitle()), seconds * 1000 + milliseconds, (tempCombinedIntervalRows.elementAt(i) + rowIndex - tempRow.getID()) / 2, tempCombinedIntervalRows.elementAt(i) % 2); // TODO calculate individual start date
+                            }
+                        } else {
+                            ModelCreator.revertChanges();
+                            superSeq = tempSuperSeq;
+                        }
                         timeBarViewer1.setModel(ModelCreator.createModel());
                         timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
                         projectChanged = true;
                     } else {
-                        tempInterval.setBegin(oldBeginDate);
-                        tempInterval.setEnd(oldBeginDate.copy().advanceMillis(duration));
-                        ModelCreator.addInterval(tempRow.getID(), tempInterval);
-                        superSeq.addSeq(getSequenceByName(tempInterval.getTitle()), seconds * 1000 + milliseconds, tempRow.getSecID(), tempRow.getType().equals("ft") ? 0 : 1);
-                        timeBarViewer1.setModel(ModelCreator.createModel());
-                        timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
+                        if (ModelCreator.addInterval(rowIndex, tempInterval) != -1
+                                && row.getType().equals(tempRow.getType())) {
+                            superSeq.addSeq(getSequenceByName(tempInterval.getTitle()), seconds * 1000 + milliseconds, row.getSecID(), row.getType().equals("ft") ? 0 : 1);
+                            ModelCreator.saveChanges();
+                            timeBarViewer1.setModel(ModelCreator.createModel());
+                            timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
+                            projectChanged = true;
+                        } else {
+                            tempInterval.setBegin(oldBeginDate);
+                            tempInterval.setEnd(oldBeginDate.copy().advanceMillis(duration));
+                            superSeq = tempSuperSeq;
+                            //superSeq.addSeq(getSequenceByName(tempInterval.getTitle()), seconds * 1000 + milliseconds, tempRow.getSecID(), tempRow.getType().equals("ft") ? 0 : 1);
+                            ModelCreator.revertChanges();
+                            timeBarViewer1.setModel(ModelCreator.createModel());
+                            timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
+                        }
                     }
 
                     tempRow = null;
                     tempInterval = null;
+                    tempCombinedIntervals = null;
                 }
             }
 
@@ -604,8 +704,8 @@ public class HexapodSimulator extends JFrame {
                     System.out.println("IO Exception while writing properties file");
                     System.out.println(ex);
                 }
-                
-                if(musicFileIsTempFile) {
+
+                if (musicFileIsTempFile) {
                     musicFile.delete();
                 }
 
@@ -621,49 +721,6 @@ public class HexapodSimulator extends JFrame {
                 }).start();
             }
         });
-
-        /*jSlider1.addChangeListener(new ChangeListener() {
-
-        public void stateChanged(ChangeEvent e) {
-        double[][] Angle = new double[6][3];
-        GLRenderer3dModel.getAngle(Angle);
-        for (int i = 0; i < 6; i++) {
-        Angle[i][0] = jSlider1.getValue();
-        }
-        GLRenderer3dModel.setAngle(Angle);
-
-        panel.repaint();
-        }
-        });
-
-        jSlider2.addChangeListener(new ChangeListener() {
-
-        public void stateChanged(ChangeEvent e) {
-        double[][] Angle = new double[6][3];
-        GLRenderer3dModel.getAngle(Angle);
-        for (int i = 0; i < 6; i++) {
-        Angle[i][1] = jSlider2.getValue();
-        }
-        GLRenderer3dModel.setAngle(Angle);
-
-        panel.repaint();
-        }
-        });
-
-        jSlider3.addChangeListener(new ChangeListener() {
-
-        public void stateChanged(ChangeEvent e) {
-        double[][] Angle = new double[6][3];
-        GLRenderer3dModel.getAngle(Angle);
-        for (int i = 0; i < 6; i++) {
-        Angle[i][2] = jSlider3.getValue();
-        }
-        GLRenderer3dModel.setAngle(Angle);
-
-        panel.repaint();
-        }
-        });*/
-
     }
 
     @Override
@@ -739,7 +796,7 @@ public class HexapodSimulator extends JFrame {
         panel3dModel.setLayout(panel3dModelLayout);
         panel3dModelLayout.setHorizontalGroup(
             panel3dModelLayout.createParallelGroup(GroupLayout.LEADING)
-            .add(0, 518, Short.MAX_VALUE)
+            .add(0, 476, Short.MAX_VALUE)
         );
         panel3dModelLayout.setVerticalGroup(
             panel3dModelLayout.createParallelGroup(GroupLayout.LEADING)
@@ -765,13 +822,13 @@ public class HexapodSimulator extends JFrame {
                     .add(kneeModeLabel)
                     .add(panelFemurTibiaLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(hintFemurTibia, GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)))
+                        .add(hintFemurTibia, GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         panelFemurTibiaLayout.setVerticalGroup(
             panelFemurTibiaLayout.createParallelGroup(GroupLayout.LEADING)
             .add(GroupLayout.TRAILING, panelFemurTibiaLayout.createSequentialGroup()
-                .addContainerGap(150, Short.MAX_VALUE)
+                .addContainerGap(148, Short.MAX_VALUE)
                 .add(hintFemurTibia)
                 .add(127, 127, 127)
                 .add(kneeModeLabel))
@@ -789,13 +846,13 @@ public class HexapodSimulator extends JFrame {
             panelCoxaLayout.createParallelGroup(GroupLayout.LEADING)
             .add(panelCoxaLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(hintCoxa, GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
+                .add(hintCoxa, GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelCoxaLayout.setVerticalGroup(
             panelCoxaLayout.createParallelGroup(GroupLayout.LEADING)
             .add(GroupLayout.TRAILING, panelCoxaLayout.createSequentialGroup()
-                .addContainerGap(148, Short.MAX_VALUE)
+                .addContainerGap(147, Short.MAX_VALUE)
                 .add(hintCoxa)
                 .add(144, 144, 144))
         );
@@ -948,7 +1005,6 @@ public class HexapodSimulator extends JFrame {
         bothCaptureButton.setText("Capture");
         bothCaptureButton.setToolTipText("Capture both planes with (nearly) locked height");
         bothCaptureButton.setEnabled(false);
-        bothCaptureButton.setVisible(false);
         bothCaptureButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 bothCaptureButtonActionPerformed(evt);
@@ -962,7 +1018,7 @@ public class HexapodSimulator extends JFrame {
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(timeBarViewer1, GroupLayout.DEFAULT_SIZE, 1223, Short.MAX_VALUE)
+                    .add(timeBarViewer1, GroupLayout.DEFAULT_SIZE, 1207, Short.MAX_VALUE)
                     .add(jPanel1Layout.createSequentialGroup()
                         .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
                             .add(jPanel1Layout.createSequentialGroup()
@@ -970,7 +1026,7 @@ public class HexapodSimulator extends JFrame {
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(stopButton, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.UNRELATED)
-                                .add(rotationSlider, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE))
+                                .add(rotationSlider, GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE))
                             .add(panel3dModel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
@@ -1001,19 +1057,18 @@ public class HexapodSimulator extends JFrame {
                                     .add(jButton6, 0, 0, Short.MAX_VALUE)
                                     .add(jCheckBox6))
                                 .addPreferredGap(LayoutStyle.UNRELATED)
-                                .add(ftCaptureButton)))
+                                .add(jPanel1Layout.createParallelGroup(GroupLayout.TRAILING)
+                                    .add(ftCaptureButton)
+                                    .add(jCheckBox7))))
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
                             .add(panelCoxa, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                             .add(jPanel1Layout.createSequentialGroup()
-                                .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
-                                    .add(cCaptureButton)
-                                    .add(bothCaptureButton)
-                                    .add(jPanel1Layout.createSequentialGroup()
-                                        .add(12, 12, 12)
-                                        .add(jCheckBox7)))
+                                .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING, false)
+                                    .add(bothCaptureButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .add(cCaptureButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .add(24, 24, 24)
-                                .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
+                                .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(deleteButton)
                                 .add(28, 28, 28)))))
@@ -1039,7 +1094,7 @@ public class HexapodSimulator extends JFrame {
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
                             .add(deleteButton)
-                            .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 103, Short.MAX_VALUE)
+                            .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
                             .add(jPanel1Layout.createSequentialGroup()
                                 .add(jPanel1Layout.createParallelGroup(GroupLayout.BASELINE)
                                     .add(jCheckBox1)
@@ -1059,10 +1114,9 @@ public class HexapodSimulator extends JFrame {
                                         .add(jButton4)
                                         .add(jButton5)
                                         .add(jButton6))
-                                    .add(jPanel1Layout.createSequentialGroup()
-                                        .add(jCheckBox7)
-                                        .addPreferredGap(LayoutStyle.RELATED)
-                                        .add(bothCaptureButton)))))))
+                                    .add(jCheckBox7)
+                                    .add(bothCaptureButton))
+                                .add(17, 17, 17)))))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(timeBarViewer1, GroupLayout.PREFERRED_SIZE, 252, GroupLayout.PREFERRED_SIZE)
                 .add(122, 122, 122))
@@ -1291,17 +1345,32 @@ public class HexapodSimulator extends JFrame {
 
         // ... in the timebar model, ...
         ModelCreator.remInterval(sequenceVector.get(index).getName());
+        ModelCreator.saveChanges();
         timeBarViewer1.setModel(ModelCreator.createModel());
         timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
 
         // ... in the sequence vector and in the sequence list
+        HexiSequenz combSecondSequence = null;
+        int combSecondSequenceIndex = -1;
+        if (sequenceVector.get(index).getName().split("_")[0].equals("combft")) {
+            combSecondSequence = getSequenceByName("combc_" + sequenceVector.get(index).getName().substring(7));
+        } else if (sequenceVector.get(index).getName().split("_")[0].equals("combc")) {
+            combSecondSequence = getSequenceByName("combft_" + sequenceVector.get(index).getName().substring(6));
+        }
         sequenceVector.removeElementAt(index);
+        if (combSecondSequence != null) {
+            combSecondSequenceIndex = sequenceVector.indexOf(combSecondSequence);
+            sequenceVector.removeElement(combSecondSequence);
+        }
         ListModel items = sequenceList.getModel();
         Vector listentries = new Vector(items.getSize());
         for (int i = 0; i < listentries.capacity(); i++) {
             listentries.add(items.getElementAt(i));
         }
         listentries.removeElementAt(index);
+        if (combSecondSequence != null) {
+            listentries.remove(combSecondSequenceIndex);
+        }
         sequenceList = new JList(listentries);
         sequenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         sequenceList.setDragEnabled(true);
@@ -1503,7 +1572,60 @@ public class HexapodSimulator extends JFrame {
     }//GEN-LAST:event_jCheckBox7ActionPerformed
 
     private void bothCaptureButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_bothCaptureButtonActionPerformed
-        // TODO add your handling code here:
+        if (!((JToggleButton) evt.getSource()).isSelected()) {
+            ftSequence.clean();
+            cSequence.clean();
+            if (properties.normalizeInput) {
+                ftSequence.normalize();
+                ftSequence.addContent(GLRendererFemurTibia.angle[0], GLRendererFemurTibia.angle[1]); // add the last value
+                ftSequence.clean();
+                cSequence.normalize();
+                cSequence.addContent(GLRendererCoxa.angle, 0);
+                cSequence.clean();
+            }
+            String ftName, cName;
+            boolean validName = false;
+            do {
+                int validNameCounter = 0;
+                String name = JOptionPane.showInputDialog("Name?");
+                ftName = "combft_" + name;
+                cName = "combc_" + name;
+                for (int i = 0; i < sequenceVector.size(); i++) {
+                    if (!sequenceVector.elementAt(i).getName().equals(ftName) && !sequenceVector.elementAt(i).getName().equals(cName)) {
+                        validNameCounter++;
+                    }
+                }
+                if (validNameCounter == sequenceVector.size()) {
+                    validName = true;
+                }
+            } while (!validName);
+            String time = JOptionPane.showInputDialog("Time (milliseconds)?");
+
+            ftSequence.setTime(Integer.parseInt(time));
+            ftSequence.setName(ftName);
+            cSequence.setTime(Integer.parseInt(time));
+            cSequence.setName(cName);
+
+            ListModel items = sequenceList.getModel();
+            Object[] listentries = new Object[items.getSize()];
+            for (int i = 0; i < listentries.length; i++) {
+                listentries[i] = items.getElementAt(i);
+            }
+            Object[] newlistentries = new Object[listentries.length + 2];
+            System.arraycopy(listentries, 0, newlistentries, 0, listentries.length);
+            newlistentries[listentries.length] = ftName;
+            newlistentries[listentries.length + 1] = cName;
+            sequenceList = new JList(newlistentries);
+            sequenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            sequenceList.setDragEnabled(true);
+            jScrollPane1.setViewportView(sequenceList);
+
+            sequenceVector.addElement(ftSequence);
+            ftSequence = new HexiSequenz();
+            sequenceVector.addElement(cSequence);
+            cSequence = new HexiSequenz();
+            projectChanged = true;
+        }
     }//GEN-LAST:event_bothCaptureButtonActionPerformed
 
     private HexiSequenz getSequenceByName(String name) {
@@ -1527,6 +1649,8 @@ public class HexapodSimulator extends JFrame {
         HexapodSimulatorProjectDataPart projectDataPart = (HexapodSimulatorProjectDataPart) dataInputStream.readObject();
         superSeq = projectDataPart.getSuperSeq();
         ModelCreator.setIntervals(projectDataPart.getIntervals());
+        ModelCreator.setIntervalCombinations(projectDataPart.getIntervalCombinations());
+        ModelCreator.saveChanges();
         timeBarViewer1.setModel(ModelCreator.createModel());
         timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
         sequenceVector = projectDataPart.getSequences();
@@ -1547,7 +1671,7 @@ public class HexapodSimulator extends JFrame {
             musicFileIsTempFile = true;
             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(musicFile));
             int buffer;
-            while((buffer = bufferedInputStream.read()) != -1) {
+            while ((buffer = bufferedInputStream.read()) != -1) {
                 bufferedOutputStream.write(buffer);
             }
             bufferedOutputStream.close();
@@ -1566,6 +1690,7 @@ public class HexapodSimulator extends JFrame {
         }
         superSeq = new SuperSeq();
         ModelCreator.clear();
+        ModelCreator.saveChanges();
         timeBarViewer1.setModel(ModelCreator.createModel());
         timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
         sequenceVector.clear();
@@ -1574,10 +1699,11 @@ public class HexapodSimulator extends JFrame {
         sequenceList.setDragEnabled(true);
         jScrollPane1.setViewportView(sequenceList);
         musicInputStream = null;
-        if(musicFileIsTempFile) {
+        if (musicFileIsTempFile) {
             musicFile.delete();
         }
         musicFile = null;
+        musicFileIsTempFile = false;
         setTitle("Hexapod Simulator");
         properties.projectFile = null;
         projectChanged = false;
@@ -1588,7 +1714,7 @@ public class HexapodSimulator extends JFrame {
         ZipEntry music = new ZipEntry("music");
         ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(file));
         zipOutputStream.setMethod(ZipOutputStream.DEFLATED);    // compress zip file
-        HexapodSimulatorProjectDataPart projectDataPart = new HexapodSimulatorProjectDataPart(null, superSeq, sequenceVector, ModelCreator.getIntervals());
+        HexapodSimulatorProjectDataPart projectDataPart = new HexapodSimulatorProjectDataPart(null, superSeq, sequenceVector, ModelCreator.getAllIntervals(), ModelCreator.getAllIntervallCombinations());
 
         zipOutputStream.putNextEntry(data);
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(zipOutputStream);
