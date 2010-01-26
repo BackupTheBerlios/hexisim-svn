@@ -13,6 +13,8 @@ import java.util.Date;
  */
 public class EventInterval extends IntervalImpl implements Serializable{
 
+    static final long serialVersionUID = 47342131301883064L;
+    
     private String _title;
     // for serialization:
     private Date _beginI;

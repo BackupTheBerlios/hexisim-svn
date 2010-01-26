@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package hexapodsimulator;
 
 import hexapodsimulator.timebar.EventInterval;
@@ -14,6 +10,8 @@ import java.util.Vector;
  * @author peter
  */
 public class HexapodSimulatorProjectDataPart implements Serializable {
+
+    static final long serialVersionUID = -2815841498951309357L;
 
     private String _name;
     private SuperSeq _superSeq;

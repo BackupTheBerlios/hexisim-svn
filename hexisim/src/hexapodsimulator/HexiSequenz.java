@@ -13,6 +13,8 @@ import java.util.Vector;
  */
 public class HexiSequenz implements Serializable {
 
+    static final long serialVersionUID = 280051512980290226L;
+
     /**
      * Array beliebiger L�nge von 2 Winkeln<br />
      * [die beiden Winkel][wieviele]

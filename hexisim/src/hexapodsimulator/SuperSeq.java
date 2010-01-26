@@ -17,6 +17,8 @@ import java.util.logging.Logger;
  */
 public class SuperSeq implements Serializable {
 
+    static final long serialVersionUID = -6525915112587573133L;
+
     /**
      * Beinhaltet eine Sequenz, genannt hexiSequenz, und eine Position (zeitlich), pos
      */
