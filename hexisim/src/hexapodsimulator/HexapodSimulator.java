@@ -30,6 +30,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
@@ -68,6 +69,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JPopupMenu.Separator;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
@@ -143,10 +146,27 @@ public class HexapodSimulator extends JFrame {
         animator = new Animator(panel3dModel);
 
         panelFemurTibia.addGLEventListener(new GLRendererFemurTibia());
-        panelFemurTibia.addMouseListener(new GLRendererFemurTibia());
+        panelFemurTibia.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    femurTibiaPopupMenu.show(panelFemurTibia, e.getX(), e.getY());
+                }
+            }
+        });
         panelFemurTibia.addMouseMotionListener(new GLRendererFemurTibia());
 
         panelCoxa.addGLEventListener(new GLRendererCoxa());
+        panelCoxa.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    coxaPopupMenu.show(panelCoxa, e.getX(), e.getY());
+                }
+            }
+        });
         panelCoxa.addMouseMotionListener(new GLRendererCoxa());
 
         updater = new ActionListener() {
@@ -736,6 +756,15 @@ public class HexapodSimulator extends JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        coxaPopupMenu = new JPopupMenu();
+        coxaHoldXRadioButtonMenuItem = new JRadioButtonMenuItem();
+        coxaHoldYRadioButtonMenuItem = new JRadioButtonMenuItem();
+        femurTibiaPopupMenu = new JPopupMenu();
+        femurTibiaKneeUpRadioButtonMenuItem = new JRadioButtonMenuItem();
+        femurTibiaKneeDownRadioButtonMenuItem = new JRadioButtonMenuItem();
+        femurTibiaPopupMenuSeparator = new Separator();
+        femurTibiaHoldXRadioButtonMenuItem = new JRadioButtonMenuItem();
+        femurTibiaHoldYRadioButtonMenuItem = new JRadioButtonMenuItem();
         jPanel1 = new JPanel();
         panel3dModel = new GLJPanel();
         panelFemurTibia = new GLJPanel();
@@ -782,6 +811,56 @@ public class HexapodSimulator extends JFrame {
         propertiesMenu = new JMenu();
         normalizeInputCheckBoxMenuItem = new JCheckBoxMenuItem();
         interpolateOutputCheckBoxMenuItem = new JCheckBoxMenuItem();
+
+        coxaHoldXRadioButtonMenuItem.setText("Hold X coordinate");
+        coxaHoldXRadioButtonMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                coxaHoldXRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        coxaPopupMenu.add(coxaHoldXRadioButtonMenuItem);
+
+        coxaHoldYRadioButtonMenuItem.setText("Hold Y coordinate");
+        coxaHoldYRadioButtonMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                coxaHoldYRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        coxaPopupMenu.add(coxaHoldYRadioButtonMenuItem);
+
+        femurTibiaKneeUpRadioButtonMenuItem.setSelected(true);
+        femurTibiaKneeUpRadioButtonMenuItem.setText("Knee up");
+        femurTibiaKneeUpRadioButtonMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                femurTibiaKneeUpRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        femurTibiaPopupMenu.add(femurTibiaKneeUpRadioButtonMenuItem);
+
+        femurTibiaKneeDownRadioButtonMenuItem.setText("Knee down");
+        femurTibiaKneeDownRadioButtonMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                femurTibiaKneeDownRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        femurTibiaPopupMenu.add(femurTibiaKneeDownRadioButtonMenuItem);
+        femurTibiaPopupMenu.add(femurTibiaPopupMenuSeparator);
+
+        femurTibiaHoldXRadioButtonMenuItem.setText("Hold X coordinate");
+        femurTibiaHoldXRadioButtonMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                femurTibiaHoldXRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        femurTibiaPopupMenu.add(femurTibiaHoldXRadioButtonMenuItem);
+
+        femurTibiaHoldYRadioButtonMenuItem.setText("Hold Y coordinate");
+        femurTibiaHoldYRadioButtonMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                femurTibiaHoldYRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        femurTibiaPopupMenu.add(femurTibiaHoldYRadioButtonMenuItem);
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
@@ -1621,6 +1700,58 @@ public class HexapodSimulator extends JFrame {
         }
     }//GEN-LAST:event_bothCaptureButtonActionPerformed
 
+    private void coxaHoldXRadioButtonMenuItemActionPerformed(ActionEvent evt) {//GEN-FIRST:event_coxaHoldXRadioButtonMenuItemActionPerformed
+        GLRendererCoxa.holdX = coxaHoldXRadioButtonMenuItem.isSelected();
+        if (GLRendererCoxa.holdX) {
+            coxaHoldYRadioButtonMenuItem.setSelected(false);
+            GLRendererCoxa.holdY = false;
+        }
+    }//GEN-LAST:event_coxaHoldXRadioButtonMenuItemActionPerformed
+
+    private void coxaHoldYRadioButtonMenuItemActionPerformed(ActionEvent evt) {//GEN-FIRST:event_coxaHoldYRadioButtonMenuItemActionPerformed
+        GLRendererCoxa.holdY = coxaHoldYRadioButtonMenuItem.isSelected();
+        if (GLRendererCoxa.holdY) {
+            coxaHoldXRadioButtonMenuItem.setSelected(false);
+            GLRendererCoxa.holdX = false;
+        }
+    }//GEN-LAST:event_coxaHoldYRadioButtonMenuItemActionPerformed
+
+    private void femurTibiaHoldXRadioButtonMenuItemActionPerformed(ActionEvent evt) {//GEN-FIRST:event_femurTibiaHoldXRadioButtonMenuItemActionPerformed
+        GLRendererFemurTibia.holdX = femurTibiaHoldXRadioButtonMenuItem.isSelected();
+        if (GLRendererFemurTibia.holdX) {
+            femurTibiaHoldYRadioButtonMenuItem.setSelected(false);
+            GLRendererFemurTibia.holdY = false;
+        }
+    }//GEN-LAST:event_femurTibiaHoldXRadioButtonMenuItemActionPerformed
+
+    private void femurTibiaHoldYRadioButtonMenuItemActionPerformed(ActionEvent evt) {//GEN-FIRST:event_femurTibiaHoldYRadioButtonMenuItemActionPerformed
+        GLRendererFemurTibia.holdY = femurTibiaHoldYRadioButtonMenuItem.isSelected();
+        if (GLRendererFemurTibia.holdY) {
+            femurTibiaHoldXRadioButtonMenuItem.setSelected(false);
+            GLRendererFemurTibia.holdX = false;
+        }
+    }//GEN-LAST:event_femurTibiaHoldYRadioButtonMenuItemActionPerformed
+
+    private void femurTibiaKneeUpRadioButtonMenuItemActionPerformed(ActionEvent evt) {//GEN-FIRST:event_femurTibiaKneeUpRadioButtonMenuItemActionPerformed
+        if (femurTibiaKneeUpRadioButtonMenuItem.isSelected()) {
+            GLRendererFemurTibia.kneeUp = true;
+            femurTibiaKneeDownRadioButtonMenuItem.setSelected(false);
+            kneeModeLabel.setText("Knee up");
+        } else {
+            femurTibiaKneeUpRadioButtonMenuItem.setSelected(true);
+        }
+    }//GEN-LAST:event_femurTibiaKneeUpRadioButtonMenuItemActionPerformed
+
+    private void femurTibiaKneeDownRadioButtonMenuItemActionPerformed(ActionEvent evt) {//GEN-FIRST:event_femurTibiaKneeDownRadioButtonMenuItemActionPerformed
+        if (femurTibiaKneeDownRadioButtonMenuItem.isSelected()) {
+            GLRendererFemurTibia.kneeUp = false;
+            femurTibiaKneeUpRadioButtonMenuItem.setSelected(false);
+            kneeModeLabel.setText("Knee down");
+        } else {
+            femurTibiaKneeDownRadioButtonMenuItem.setSelected(true);
+        }
+    }//GEN-LAST:event_femurTibiaKneeDownRadioButtonMenuItemActionPerformed
+
     private HexiSequenz getSequenceByName(String name) {
         HexiSequenz seq = null;
         for (int i = 0; i < sequenceVector.size(); i++) {
@@ -1804,8 +1935,17 @@ public class HexapodSimulator extends JFrame {
     private JToggleButton bothCaptureButton;
     private JToggleButton cCaptureButton;
     private JMenuItem closeProjectMenuItem;
+    private JRadioButtonMenuItem coxaHoldXRadioButtonMenuItem;
+    private JRadioButtonMenuItem coxaHoldYRadioButtonMenuItem;
+    private JPopupMenu coxaPopupMenu;
     private JButton deleteButton;
     private JMenuItem exportMenuItem;
+    private JRadioButtonMenuItem femurTibiaHoldXRadioButtonMenuItem;
+    private JRadioButtonMenuItem femurTibiaHoldYRadioButtonMenuItem;
+    private JRadioButtonMenuItem femurTibiaKneeDownRadioButtonMenuItem;
+    private JRadioButtonMenuItem femurTibiaKneeUpRadioButtonMenuItem;
+    private JPopupMenu femurTibiaPopupMenu;
+    private Separator femurTibiaPopupMenuSeparator;
     private JMenu fileMenu;
     private JToggleButton ftCaptureButton;
     private JLabel hintCoxa;

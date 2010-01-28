@@ -1,7 +1,7 @@
 package hexapodsimulator;
 
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
@@ -14,11 +14,12 @@ import javax.media.opengl.glu.GLU;
  *
  * This version is equal to Brian Paul's version 1.2 1999/10/21
  */
-public class GLRendererCoxa implements GLEventListener, MouseMotionListener {
+public class GLRendererCoxa extends MouseAdapter implements GLEventListener {
 
     public static boolean holdX;
     public static boolean holdY;
 
+    @Override
     public void mouseDragged(MouseEvent e) {
         GLJPanel glpanel = (GLJPanel) e.getSource();
         double mx = (double) e.getX() / glpanel.getWidth() * 2 - 1;
@@ -49,9 +50,6 @@ public class GLRendererCoxa implements GLEventListener, MouseMotionListener {
             double l = 0.8+Math.hypot(mx, my - 0.1);
             GLRendererFemurTibia.moveAnglesToXY(l, GLRendererFemurTibia.getY() + 1);
         }
-    }
-
-    public void mouseMoved(MouseEvent e) {
     }
 
     public void init(GLAutoDrawable drawable) {

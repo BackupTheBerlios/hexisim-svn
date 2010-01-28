@@ -17,22 +17,10 @@ import javax.swing.JLabel;
  */
 public class GLRendererFemurTibia extends MouseAdapter implements GLEventListener {
 
-    private static boolean kneeUp;
+    public static boolean kneeUp;
     private static boolean currentKneeUp;
-    private static boolean holdX;
-    private static boolean holdY;
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        GLJPanel glPanel = (GLJPanel) e.getSource();
-        if (e.getButton() == MouseEvent.BUTTON3) {
-            kneeUp = !kneeUp;
-            if (glPanel.getComponent(0).getName().equals("kneeMode")) {
-                JLabel label = (JLabel) glPanel.getComponent(0);
-                label.setText(kneeUp ? "Knee up" : "Knee down");
-            }
-        }
-    }
+    public static boolean holdX;
+    public static boolean holdY;
 
     @Override
     public void mouseDragged(MouseEvent e) {
