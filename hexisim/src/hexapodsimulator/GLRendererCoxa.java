@@ -16,6 +16,9 @@ import javax.media.opengl.glu.GLU;
  */
 public class GLRendererCoxa implements GLEventListener, MouseMotionListener {
 
+    public static boolean holdX;
+    public static boolean holdY;
+
     public void mouseDragged(MouseEvent e) {
         GLJPanel glpanel = (GLJPanel) e.getSource();
         double mx = (double) e.getX() / glpanel.getWidth() * 2 - 1;
@@ -26,6 +29,11 @@ public class GLRendererCoxa implements GLEventListener, MouseMotionListener {
 
         double bx = b * Math.cos(Math.toRadians(90 - angle));
         double by = 0.1 + b * Math.sin(Math.toRadians(90 - angle));
+
+        if (holdX)
+            mx = bx;
+        if (holdY)
+            my = by;
 
         if (Math.abs(mx - bx) < 0.2 && Math.abs(my - by) < 0.2 && !Double.isNaN(Math.acos(mx / b))) {
             angle = 90 - Math.toDegrees(Math.acos(mx / b));
