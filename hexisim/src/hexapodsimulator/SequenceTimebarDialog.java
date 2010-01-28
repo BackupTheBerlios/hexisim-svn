@@ -1,14 +1,9 @@
-/*
- * SequenceTimebarDialog.java
- *
- * Created on 07.01.2010, 15:16:02
- */
 package hexapodsimulator;
 
 import java.util.Date;
 
 /**
- *
+ * Dialog for the properties of an interval in the timebar
  * @author peter
  */
 public class SequenceTimebarDialog extends javax.swing.JDialog {
@@ -39,20 +34,17 @@ public class SequenceTimebarDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jTextField3 = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         minTextField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        secTextField = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
-        msecTextField = new javax.swing.JTextField();
+        secTextField = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
+        msecTextField = new javax.swing.JTextField();
         setTimeButton = new javax.swing.JButton();
         deleteSequenceButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
-
-        jTextField3.setText("jTextField3");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -73,7 +65,7 @@ public class SequenceTimebarDialog extends javax.swing.JDialog {
             }
         });
 
-        deleteSequenceButton.setText("Delete sequence");
+        deleteSequenceButton.setText("Delete Sequence");
         deleteSequenceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteSequenceButtonActionPerformed(evt);
@@ -98,16 +90,16 @@ public class SequenceTimebarDialog extends javax.swing.JDialog {
                     .add(layout.createSequentialGroup()
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(minTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(2, 2, 2)
+                        .add(minTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(1, 1, 1)
                         .add(jLabel3)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(secTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(2, 2, 2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(secTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(1, 1, 1)
                         .add(jLabel4)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(msecTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(2, 2, 2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(msecTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(1, 1, 1)
                         .add(jLabel5))
                     .add(layout.createSequentialGroup()
                         .add(setTimeButton)
@@ -122,7 +114,7 @@ public class SequenceTimebarDialog extends javax.swing.JDialog {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(minTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -131,7 +123,7 @@ public class SequenceTimebarDialog extends javax.swing.JDialog {
                     .add(jLabel4)
                     .add(msecTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel5))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(setTimeButton)
                     .add(deleteSequenceButton)
@@ -166,7 +158,7 @@ public class SequenceTimebarDialog extends javax.swing.JDialog {
         secTextField.setText(Long.toString(milliSeconds/1000%60));
         minTextField.setText(Long.toString(milliSeconds/60000%60));
     }
-    
+
     public Date getDate() {
         return date;
     }
@@ -178,6 +170,7 @@ public class SequenceTimebarDialog extends javax.swing.JDialog {
     public boolean getCancelled() {
         return cancelled;
     }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton deleteSequenceButton;
@@ -186,10 +179,10 @@ public class SequenceTimebarDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JTextField jTextField3;
     private javax.swing.JTextField minTextField;
     private javax.swing.JTextField msecTextField;
     private javax.swing.JTextField secTextField;
     private javax.swing.JButton setTimeButton;
     // End of variables declaration//GEN-END:variables
+
 }

@@ -117,6 +117,14 @@ public class ModelCreator {
         return combinedIntervals;
     }
 
+    /**
+     * Returns a vector containing the row indices of the intervals
+     * that are combined with the specified interval.
+     * @param row The row to search for the given interval
+     * @param index The index of the given interval
+     * @return A vector of Integers containing one row id per interval
+     * or null if the specified interval is not part of a combination.
+     */
     public static Vector<Integer> getCombinedIntervalRows(int row, int index) {
         Vector <Integer> combinedIntervalRows = new Vector<Integer>();
         int combinationIndex = getCombinationIndex(row, index);
@@ -284,6 +292,12 @@ public class ModelCreator {
         return 0;
     }
 
+    /**
+     * Returns the row model index for the specified row
+     * @param index The index of the row
+     * @return A SequenceTimebarRowModel object, describing the row model
+     * of the specified row
+     */
     public static SequenceTimebarRowModel getRowModelByIndex(int index) {
         return (SequenceTimebarRowModel) createModel().getRow(index);
     }
@@ -304,18 +318,50 @@ public class ModelCreator {
      * Saves the changes made to the interval vector.
      * This allows to revert this state later.
      */
-    public static void saveChanges() {
+    public static void saveIntervalChanges() {
         savedIntervals = (Vector<Vector<EventInterval>>)DeepObjectCopy.getDeepCopy(intervals);
+    }
+
+    /**
+     * Saves the changes made to the interval combinations.
+     * This allows to revert this state later.
+     */
+    public static void saveCombinationChanges() {
         savedIntervalCombinations = (Vector<Vector<int[]>>)DeepObjectCopy.getDeepCopy(intervalCombinations);
     }
 
     /**
+     * Saves the changes made to the interval vector and to the interval combinations.
+     * This allows to revert this state later.
+     */
+    public static void saveChanges() {
+        saveIntervalChanges();
+        saveCombinationChanges();
+    }
+
+    /**
      * Reverts the changes made to the interval vector
-     * since the last call of saveChanges.
+     * since the last call of saveChanges or saveIntervalChanges.
+     */
+    public static void revertIntervalChanges() {
+        intervals = (Vector<Vector<EventInterval>>)DeepObjectCopy.getDeepCopy(savedIntervals);
+    }
+
+    /**
+     * Reverts the changes made to the interval combinations
+     * since the last call of saveChanges or saveCombinationChanges.
+     */
+    public static void revertCombinationChanges() {
+        intervalCombinations = (Vector<Vector<int[]>>)DeepObjectCopy.getDeepCopy(savedIntervalCombinations);
+    }
+
+    /**
+     * Reverts the changes made to the interval vector or to the interval combinations
+     * since the last call of saveChanges, saveIntervalChanges or saveCombinationChanges.
      */
     public static void revertChanges() {
-        intervals = (Vector<Vector<EventInterval>>)DeepObjectCopy.getDeepCopy(savedIntervals);
-        intervalCombinations = (Vector<Vector<int[]>>)DeepObjectCopy.getDeepCopy(savedIntervalCombinations);
+        revertIntervalChanges();
+        revertCombinationChanges();
     }
 
     /**

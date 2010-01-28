@@ -67,6 +67,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
@@ -147,14 +148,6 @@ public class HexapodSimulator extends JFrame {
 
         panelCoxa.addGLEventListener(new GLRendererCoxa());
         panelCoxa.addMouseMotionListener(new GLRendererCoxa());
-
-        /*addKeyListener(new KeyAdapter() {
-
-        @Override
-        public void keyPressed(KeyEvent ke) {
-        System.out.println("a");
-        }
-        });*/
 
         updater = new ActionListener() {
 
@@ -1649,7 +1642,11 @@ public class HexapodSimulator extends JFrame {
         HexapodSimulatorProjectDataPart projectDataPart = (HexapodSimulatorProjectDataPart) dataInputStream.readObject();
         superSeq = projectDataPart.getSuperSeq();
         ModelCreator.setIntervals(projectDataPart.getIntervals());
-        ModelCreator.setIntervalCombinations(projectDataPart.getIntervalCombinations());
+        if (projectDataPart.getIntervalCombinations() == null) {
+            ModelCreator.setIntervalCombinations(new Vector<Vector<int[]>>());
+        } else {
+            ModelCreator.setIntervalCombinations(projectDataPart.getIntervalCombinations());
+        }
         ModelCreator.saveChanges();
         timeBarViewer1.setModel(ModelCreator.createModel());
         timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
