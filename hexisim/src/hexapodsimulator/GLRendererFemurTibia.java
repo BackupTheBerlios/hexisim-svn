@@ -19,6 +19,8 @@ public class GLRendererFemurTibia extends MouseAdapter implements GLEventListene
 
     private static boolean kneeUp;
     private static boolean currentKneeUp;
+    private static boolean holdX;
+    private static boolean holdY;
 
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -40,48 +42,14 @@ public class GLRendererFemurTibia extends MouseAdapter implements GLEventListene
         x3 = (double) e.getX() / glPanel.getWidth() * 2;    //Mouse position X, calculated
         y3 = (double) e.getY() / glPanel.getHeight() * 2;   //Mouse position Y, calculated
 
-        moveAnglesToXY(x3, y3); //Hold Y
+        if(holdX)
+            moveAnglesToXY(getX()+0.8, y3);
+        else if (holdY)
+            moveAnglesToXY(x3, getY()+1);
+        else
+            moveAnglesToXY(x3, y3);
 
-        //xStart = 0.8;
-        //yStart = 1;
-//
-//        double[] oldAngle = angle.clone();
-//
-//        double angleIntermediateResult1 = Math.acos((b1 * b1 - b2 * b2 + (Math.pow(x3 - xStart, 2) + Math.pow(y3 - yStart, 2))) / (2 * b1 * Math.hypot(x3 - xStart, y3 - yStart)));
-//        double angleIntermediateResult2 = Math.acos((b2 * b2 - b1 * b1 + (Math.pow(x3 - xStart, 2) + Math.pow(y3 - yStart, 2))) / (2 * b2 * Math.hypot(x3 - xStart, y3 - yStart)));
-//        if (currentKneeUp && !Double.isNaN(angleIntermediateResult1) && !Double.isNaN(angleIntermediateResult2)) {
-//            angle[0] = 90 - Math.toDegrees(Math.atan((x3 - xStart) / (y3 - yStart))) - Math.toDegrees(angleIntermediateResult1);
-//            angle[1] = Math.toDegrees(angleIntermediateResult1) + Math.toDegrees(angleIntermediateResult2);
-//
-//        //TO-DO: calculate the right angles for knee down - mode - should work
-//        } else if (!currentKneeUp && !Double.isNaN(angleIntermediateResult1) && !Double.isNaN(angleIntermediateResult2)) {
-//            angle[0] = - 90 - Math.toDegrees(Math.atan((x3 - xStart) / (y3 - yStart))) - Math.toDegrees(angleIntermediateResult1);
-//            angle[1] = - Math.toDegrees(angleIntermediateResult1) + Math.toDegrees(angleIntermediateResult2);
-//        }
-//
-//        if (Math.hypot(x3 - xStart, y3 - yStart) >= (b1 + b2)) { // Mouse position is out of range
-//            angle[0] = 90 - Math.toDegrees(Math.atan((x3 - xStart) / (y3 - yStart)));
-//            angle[1] = 0;
-//            //if (currentKneeUp != kneeUp) {    //lol - n1
-//                currentKneeUp = kneeUp;
-//            //}
-//        }
-//
-//        //Maybe it's better to treat both angles eqally (?)
-//        double[] anglePwmValue = new double[2];
-//        anglePwmValue[0] = Math.toRadians(-angle[0])*1024 + 2145;
-//        anglePwmValue[1] = Math.toRadians(-angle[1])*1024 + 2680;
-//        /*if (angle[0] < (-72.9 + 30) || angle[0] > (93.3 + 30)) {*/ if(anglePwmValue[0] > 3277 || anglePwmValue[0] < 306) {
-//            angle[0] = oldAngle[0];
-//        }
-//        /*if (angle[1] < (-90 + 59.9) || angle[1] > (83.9 + 59.9)) {*/ if(anglePwmValue[1] > 3109 || anglePwmValue[1] < 0 /*|| anglePwmValue[0] > 3277 || anglePwmValue[0] < 306*/) {
-//            //angle[0] = oldAngle[0];
-//            angle[1] = oldAngle[1];
-//            //angle[0] = 90 - Math.toDegrees(Math.atan((x3 - xStart) / (y3 - yStart))) - (180 - angle[1]) / 2;
-//        }
-//
-//        //System.out.println((Math.toRadians(angle[0]) * 1024 + 2145) + ", " + (Math.toRadians(angle[1]) * 1024 + 2680));
-    }
+}
 
     public static void moveAnglesToXY(double x3, double y3){
         double xStart = 0.8;
@@ -126,7 +94,7 @@ public class GLRendererFemurTibia extends MouseAdapter implements GLEventListene
     }
 
     public static double getX(){
-        return 0.;  //TODO aus Winkeln X berechnen - unwichtig
+        return b1 * Math.cos(Math.toRadians(angle[0])) +  b2 * Math.cos(Math.toRadians(angle[0] + angle[1]));
     }
 
     public static double getY(){
