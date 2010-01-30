@@ -12,12 +12,14 @@ import de.jaret.util.ui.timebars.swing.TimeBarViewer;
 import hexapodsimulator.player.MusicPlayer;
 import hexapodsimulator.player.SequencePlayer;
 import hexapodsimulator.timebar.*;
+import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Point;
+import java.awt.Robot;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DropTarget;
@@ -149,6 +151,19 @@ public class HexapodSimulator extends JFrame {
         panelFemurTibia.addMouseListener(new MouseAdapter() {
 
             @Override
+            public void mousePressed(MouseEvent e) {
+                if(e.getButton() == MouseEvent.BUTTON1)
+                try{
+                    (new Robot()).
+                            mouseMove(e.getXOnScreen()-e.getX()+
+                                        (int)((GLRendererFemurTibia.getX()+0.8)/2*panelFemurTibia.getWidth()),
+                                      e.getYOnScreen()-e.getY()+
+                                        (int)((GLRendererFemurTibia.getY()+1.0)/2*panelFemurTibia.getHeight())
+                                     );
+                }catch (AWTException ex){System.out.println(ex);}
+            }
+
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     femurTibiaPopupMenu.show(panelFemurTibia, e.getX(), e.getY());
@@ -159,6 +174,20 @@ public class HexapodSimulator extends JFrame {
 
         panelCoxa.addGLEventListener(new GLRendererCoxa());
         panelCoxa.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if(e.getButton() == MouseEvent.BUTTON1)
+                try{
+                    double angle=GLRendererCoxa.angle;
+                    (new Robot()).
+                            mouseMove(e.getXOnScreen()-e.getX()+
+                                        (int)((((GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0])) + GLRendererFemurTibia.b2 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0] + GLRendererFemurTibia.angle[1])))* Math.cos(Math.toRadians(90 - angle)))/2+0.5)*panelCoxa.getWidth()),
+                                      e.getYOnScreen()-e.getY()+
+                                        (int)((((GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0])) + GLRendererFemurTibia.b2 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0] + GLRendererFemurTibia.angle[1])))* Math.sin(Math.toRadians(90 - angle)))/2+0.05)*panelCoxa.getHeight())
+                                     );
+                }catch (AWTException ex){System.out.println(ex);}
+            }
 
             @Override
             public void mouseClicked(MouseEvent e) {
