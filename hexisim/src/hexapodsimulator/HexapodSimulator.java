@@ -137,9 +137,9 @@ public class HexapodSimulator extends JFrame {
             } catch (IOException ex1) {
             }
         } catch (IOException ex) {
-            System.out.println("IO Exception while reading properties file.");
+            JOptionPane.showMessageDialog(jPanel1,"Unable to read the properties file. (IOException)", "Error 301", JOptionPane.ERROR_MESSAGE);
         } catch (ClassNotFoundException ex) {
-            System.out.println("Class HexapodSimulatorProperties not found.");
+            System.out.println("Error 311 - Class HexapodSimulatorProperties not found.");
         }
         normalizeInputCheckBoxMenuItem.setState(properties.normalizeInput);
         interpolateOutputCheckBoxMenuItem.setState(properties.interpolateOutput);
@@ -160,7 +160,7 @@ public class HexapodSimulator extends JFrame {
                                       e.getYOnScreen()-e.getY()+
                                         (int)((GLRendererFemurTibia.getY()+1.0)/2*panelFemurTibia.getHeight())
                                      );
-                }catch (AWTException ex){System.out.println(ex);}
+                }catch (AWTException ex){System.out.println("Error 611 - " + ex);}
             }
 
             @Override
@@ -186,7 +186,7 @@ public class HexapodSimulator extends JFrame {
                                       e.getYOnScreen()-e.getY()+
                                         (int)((((GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0])) + GLRendererFemurTibia.b2 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0] + GLRendererFemurTibia.angle[1])))* Math.sin(Math.toRadians(90 - angle)))/2+0.05)*panelCoxa.getHeight())
                                      );
-                }catch (AWTException ex){System.out.println(ex);}
+                }catch (AWTException ex){System.out.println("Error 612 - " + ex);}
             }
 
             @Override
@@ -227,19 +227,19 @@ public class HexapodSimulator extends JFrame {
             try {
                 openProjectFile(properties.projectFile);
             } catch (FileNotFoundException ex) {
-                System.out.println("Project file not found.");
+                JOptionPane.showMessageDialog(jPanel1,"The project file " + properties.projectFile.getName() + " was not found.", "Error 101", JOptionPane.ERROR_MESSAGE);
             } catch (IOException ex) {
-                System.out.println("IO Exception while reading the project file");
+                JOptionPane.showMessageDialog(jPanel1,"Unable to read the project file. (IOException)", "Error 102", JOptionPane.ERROR_MESSAGE);
                 System.out.println(ex);
             } catch (ClassNotFoundException ex) {
-                System.out.println("Class not found.");
+                System.out.println("Error 111 - Class not found.");
                 System.out.println(ex);
             } catch (JavaLayerException ex) {
-                System.out.println("JavaLayer exception while opening project file");
+                JOptionPane.showMessageDialog(jPanel1,"Unable to load music from the project file.", "Error 103", JOptionPane.ERROR_MESSAGE);
             }
         }
         superSeq.interpolate = properties.interpolateOutput == true ? 1 : 0;
-        System.out.println(sequenceVector);
+        //System.out.println(sequenceVector);
 
         new DropTarget(timeBarViewer1, new DropTargetListener() {
 
@@ -321,12 +321,11 @@ public class HexapodSimulator extends JFrame {
                         }
                     }
                 } catch (UnsupportedFlavorException ex) {
-                    System.out.println("Unsupported Flavor");
+                    System.out.println("Error 512 - Unsupported Flavor");
                 } catch (IOException ex) {
-                    System.out.println("IO Exception while getting data from clipboard.");
+                    System.out.println("Error 511 - IO Exception while getting data from clipboard.");
                 } catch (NullPointerException ex) {
                     dtde.rejectDrop();
-                    System.out.println("Drop position is out of range.");
                 } finally {
                     timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
                 }
@@ -348,9 +347,9 @@ public class HexapodSimulator extends JFrame {
                         hintFemurTibia.setVisible(true);
                     }
                 } catch (UnsupportedFlavorException ex) {
-                    System.out.println("Unsupported Flavor");
+                    System.out.println("Error 532 - Unsupported Flavor");
                 } catch (IOException ex) {
-                    System.out.println("IO Exception while getting data from clipboard.");
+                    System.out.println("Error 531 - IO Exception while getting data from clipboard.");
                 }
             }
 
@@ -382,9 +381,9 @@ public class HexapodSimulator extends JFrame {
                     dtde.acceptDrop(dtde.getDropAction());
                     dtde.dropComplete(true);
                 } catch (UnsupportedFlavorException ex) {
-                    System.out.println("Unsupported Flavor");
+                    System.out.println("Error 534 - Unsupported Flavor");
                 } catch (IOException ex) {
-                    System.out.println("IO Exception while getting data from clipboard.");
+                    System.out.println("Error 533 - IO Exception while getting data from clipboard.");
                 } finally {
                     hintFemurTibia.setVisible(false);
                 }
@@ -406,9 +405,9 @@ public class HexapodSimulator extends JFrame {
                         hintCoxa.setVisible(true);
                     }
                 } catch (UnsupportedFlavorException ex) {
-                    System.out.println("Unsupported Flavor");
+                    System.out.println("Error 552 - Unsupported Flavor");
                 } catch (IOException ex) {
-                    System.out.println("IO Exception while getting data from clipboard.");
+                    System.out.println("Error 551 - IO Exception while getting data from clipboard.");
                 }
             }
 
@@ -439,9 +438,9 @@ public class HexapodSimulator extends JFrame {
                     dtde.acceptDrop(dtde.getDropAction());
                     dtde.dropComplete(true);
                 } catch (UnsupportedFlavorException ex) {
-                    System.out.println("Unsupported Flavor");
+                    System.out.println("Error 554 - Unsupported Flavor");
                 } catch (IOException ex) {
-                    System.out.println("IO Exception while getting data from clipboard.");
+                    System.out.println("Error 553 - IO Exception while getting data from clipboard.");
                 } finally {
                     hintCoxa.setVisible(false);
                 }
@@ -500,11 +499,13 @@ public class HexapodSimulator extends JFrame {
                         timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
                         projectChanged = true;
                     } catch (FileNotFoundException ex) {
-                        System.out.println("File not found.");
+                        JOptionPane.showMessageDialog(jPanel1,"The selected music file was not found.", "Error 201", JOptionPane.ERROR_MESSAGE);
                     } catch (TagException ex) {
-                        System.out.println("Tag Exception while reading ID3 Tags.");
+                        JOptionPane.showMessageDialog(jPanel1,"Unable to read the ID3-tags of the selected music file.", "Error 203", JOptionPane.ERROR_MESSAGE);
                     } catch (IOException ex) {
-                        System.out.println("IO Exception while calculating Song Length.");
+                        JOptionPane.showMessageDialog(jPanel1,"Unable to read the selected music file. (IOException)", "Error 202", JOptionPane.ERROR_MESSAGE);
+                    } catch (ArithmeticException ex) {  // Division by zero when calculating song length
+                        JOptionPane.showMessageDialog(jPanel1,"The selected music file is invalid.", "Error 204", JOptionPane.ERROR_MESSAGE);
                     }
                     return;
                 }
@@ -528,7 +529,7 @@ public class HexapodSimulator extends JFrame {
                             }
                         }
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        System.out.println("Error 413 - " + ex);
                     }
                     ModelCreator.remInterval(rowIndex, intervalIndex);
                     timeBarViewer1.setModel(ModelCreator.createModel());
@@ -569,7 +570,7 @@ public class HexapodSimulator extends JFrame {
                             }
                             projectChanged = true;
                         } catch (Exception ex) {
-                            ex.printStackTrace();
+                            System.out.println("Error 411 - " + ex);
                         }
                         return;
                     }
@@ -591,7 +592,7 @@ public class HexapodSimulator extends JFrame {
                             }
                         }
                     } catch (Exception ex) {
-                        System.out.println(ex);
+                        System.out.println("Error 412 - " + ex);
                     }
                     long duration = tempInterval.getMillis();
                     tempInterval.setBegin(newBeginDate);
@@ -741,9 +742,9 @@ public class HexapodSimulator extends JFrame {
                     os.writeObject(properties);
                     os.close();
                 } catch (FileNotFoundException ex) {
-                    System.out.println("Properties File not found.");
+                    JOptionPane.showMessageDialog(jPanel1,"The properties file was not found.", "Error 321", JOptionPane.ERROR_MESSAGE);
                 } catch (IOException ex) {
-                    System.out.println("IO Exception while writing properties file");
+                    JOptionPane.showMessageDialog(jPanel1,"Unable to write the properties file. (IOException)", "Error 322", JOptionPane.ERROR_MESSAGE);
                     System.out.println(ex);
                 }
 
@@ -1441,7 +1442,7 @@ public class HexapodSimulator extends JFrame {
         try {
             superSeq.delSeq(sequenceVector.get(index).getName());
         } catch (Exception ex) {
-            System.out.println(ex);
+            System.out.println("Error 414 - " + ex);
         }
 
         // ... in the timebar model, ...
@@ -1487,7 +1488,7 @@ public class HexapodSimulator extends JFrame {
                 musicPlayer.start();
                 //musicPlayer.setRunning(true);
             } catch (JavaLayerException ex) {
-                System.out.println("JavaLayerException while opening file.");
+                JOptionPane.showMessageDialog(jPanel1,"Unable to open the music file.", "Error 221", JOptionPane.ERROR_MESSAGE);
             }
         }
 
@@ -1514,7 +1515,7 @@ public class HexapodSimulator extends JFrame {
             try {
                 musicInputStream = new FileInputStream(musicFile);
             } catch (FileNotFoundException ex) {
-                System.out.println("Reopening: Music file not found!");
+                JOptionPane.showMessageDialog(jPanel1,"The music file was not found.", "Error 241", JOptionPane.ERROR_MESSAGE);
             }
         }
 
@@ -1534,7 +1535,7 @@ public class HexapodSimulator extends JFrame {
         try {
             superSeq.angletofile(f);
         } catch (Exception ex) {
-            //System.out.println("An error occured while exporting the Project");
+            JOptionPane.showMessageDialog(jPanel1,"An error occured while exporting the project.", "Error 401", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
         }
     }//GEN-LAST:event_exportMenuItemActionPerformed
@@ -1566,7 +1567,7 @@ public class HexapodSimulator extends JFrame {
         try {
             saveProjectFile(f);
         } catch (IOException ex) {
-            System.out.println("An error occured while writing the Project File");
+            JOptionPane.showMessageDialog(jPanel1,"Unable to save the project file. (IOException)", "Error 141", JOptionPane.ERROR_MESSAGE);
             System.out.println(ex);
         }
     }//GEN-LAST:event_saveProjectAsMenuItemActionPerformed
@@ -1575,7 +1576,7 @@ public class HexapodSimulator extends JFrame {
         try {
             closeProjectFile();
         } catch (IOException ex) {
-            System.out.println("An error occured while saving the Project File");
+            JOptionPane.showMessageDialog(jPanel1,"Unable to close the project file. (IOException)", "Error 143", JOptionPane.ERROR_MESSAGE);
             System.out.println(ex);
         }
     }//GEN-LAST:event_closeProjectMenuItemActionPerformed
@@ -1591,16 +1592,18 @@ public class HexapodSimulator extends JFrame {
 
         try {
             openProjectFile(f);
+        } catch (FileNotFoundException ex) {
+            JOptionPane.showMessageDialog(jPanel1,"The project file " + f.getName() + " was not found.", "Error 121", JOptionPane.ERROR_MESSAGE);
         } catch (IOException ex) {
-            System.out.println("An error occured while opening the Project File");
+            JOptionPane.showMessageDialog(jPanel1,"Unable to open the project file. (IOException)", "Error 122", JOptionPane.ERROR_MESSAGE);
             System.out.println(ex);
         } catch (NullPointerException ex) {
-            System.out.println("An error occured while opening the Project File");
+            JOptionPane.showMessageDialog(jPanel1,"An error occured while opening the Project File", "Error 124", JOptionPane.ERROR_MESSAGE);
             System.out.println(ex);
         } catch (ClassNotFoundException ex) {
-            System.out.println("An error occured while opening the Project File: A class was not found");
+            System.out.println("Error 131 - An error occured while opening the Project File: A class was not found");
         } catch (JavaLayerException ex) {
-            System.out.println("JavaLayer exception while loading music from project file");
+            JOptionPane.showMessageDialog(jPanel1,"Unable to load music from the project file.", "Error 123", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_openProjectMenuItemActionPerformed
 
@@ -1611,7 +1614,7 @@ public class HexapodSimulator extends JFrame {
             try {
                 saveProjectFile(properties.projectFile);
             } catch (IOException ex) {
-                System.out.println("An error occured while writing the Project File");
+                JOptionPane.showMessageDialog(jPanel1,"Unable to save the project file. (IOException)", "Error 142", JOptionPane.ERROR_MESSAGE);
                 System.out.println(ex);
             }
         }
@@ -1649,11 +1652,13 @@ public class HexapodSimulator extends JFrame {
             sequenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             sequenceList.setDragEnabled(true);
             jScrollPane1.setViewportView(sequenceList);
+        } catch (FileNotFoundException ex) {
+            JOptionPane.showMessageDialog(jPanel1,"The selected project file was not found.", "Error 161", JOptionPane.ERROR_MESSAGE);
         } catch (IOException ex) {
-            System.out.println("An error occured while opening the Project file to import the sequences");
+            JOptionPane.showMessageDialog(jPanel1,"Unable to open the project file. (IOException)", "Error 162", JOptionPane.ERROR_MESSAGE);
             System.out.println(ex);
         } catch (ClassNotFoundException ex) {
-            System.out.println("An error occured while opening the Project File to import the sequences: A class was not found");
+            System.out.println("Error 171 - An error occured while opening the Project File to import the sequences: A class was not found");
         }
         projectChanged = true;
     }//GEN-LAST:event_importSequencesMenuItemActionPerformed
@@ -1950,7 +1955,7 @@ public class HexapodSimulator extends JFrame {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     //UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
                 } catch (Exception ex) {
-                    Logger.getLogger(getClass().getName()).log(Level.INFO, "can not enable system look and feel", ex);
+                    JOptionPane.showMessageDialog(null, "Can not enable system look and feel - " + ex, "Error 601", JOptionPane.ERROR_MESSAGE);
                 }
 
                 HexapodSimulator frame = new HexapodSimulator();
