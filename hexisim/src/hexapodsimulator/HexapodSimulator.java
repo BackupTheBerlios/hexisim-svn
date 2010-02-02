@@ -17,6 +17,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Robot;
@@ -50,8 +51,6 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.TimerTask;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -113,6 +112,7 @@ public class HexapodSimulator extends JFrame {
     private boolean musicFileIsTempFile;
     private InputStream musicInputStream;
     private MusicPlayer musicPlayer;
+    private long playerPos;
     private SequencePlayer sequencePlayer;
     private java.util.Timer timeBarMarkerTimer;
     private java.util.Timer previewTimer;
@@ -456,11 +456,19 @@ public class HexapodSimulator extends JFrame {
             private SuperSeq tempSuperSeq;
 
             public void mouseClicked(MouseEvent e) {
+                if(timeBarViewer1.getRowForXY(e.getX(), e.getY()) == null && sequencePlayer != null) {
+                    stopButton.doClick();
+                    playerPos = timeBarViewer1.dateForXY(e.getX(), e.getY()).getDate().getTime();
+                    playButton.doClick();
+                }
             }
 
             public void mousePressed(MouseEvent e) {
                 JaretDate date = timeBarViewer1.dateForXY(e.getX(), e.getY());
                 SequenceTimebarRowModel row = ((SequenceTimebarRowModel) timeBarViewer1.getRowForXY(e.getX(), e.getY()));
+                if(row == null) {
+                    return;
+                }
                 int rowIndex = row.getID();
                 int intervalIndex = ModelCreator.getIntervalIndexAtDate(rowIndex, date);
 
@@ -827,6 +835,7 @@ public class HexapodSimulator extends JFrame {
         stopButton = new JButton();
         jCheckBox7 = new JCheckBox();
         bothCaptureButton = new JToggleButton();
+        timeLabel = new JLabel();
         jMenuBar1 = new JMenuBar();
         fileMenu = new JMenu();
         openProjectMenuItem = new JMenuItem();
@@ -898,7 +907,7 @@ public class HexapodSimulator extends JFrame {
         panel3dModel.setLayout(panel3dModelLayout);
         panel3dModelLayout.setHorizontalGroup(
             panel3dModelLayout.createParallelGroup(GroupLayout.LEADING)
-            .add(0, 476, Short.MAX_VALUE)
+            .add(0, 481, Short.MAX_VALUE)
         );
         panel3dModelLayout.setVerticalGroup(
             panel3dModelLayout.createParallelGroup(GroupLayout.LEADING)
@@ -1107,12 +1116,14 @@ public class HexapodSimulator extends JFrame {
         bothCaptureButton.setText("Capture");
         bothCaptureButton.setToolTipText("Capture both planes with (nearly) locked height");
         bothCaptureButton.setEnabled(false);
+
         bothCaptureButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 bothCaptureButtonActionPerformed(evt);
             }
         });
 
+        timeLabel.setFont(new Font("Lucida Grande", 0, 16)); // NOI18N
         GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -1128,40 +1139,43 @@ public class HexapodSimulator extends JFrame {
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(stopButton, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.UNRELATED)
-                                .add(rotationSlider, GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE))
+                                .add(rotationSlider, GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE))
                             .add(panel3dModel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
                             .add(panelFemurTibia, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                             .add(jPanel1Layout.createSequentialGroup()
                                 .add(21, 21, 21)
-                                .add(jPanel1Layout.createParallelGroup(GroupLayout.TRAILING, false)
-                                    .add(GroupLayout.LEADING, jButton1, 0, 0, Short.MAX_VALUE)
-                                    .add(GroupLayout.LEADING, jCheckBox1))
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING, false)
-                                    .add(jButton2, 0, 0, Short.MAX_VALUE)
-                                    .add(jCheckBox2))
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING, false)
-                                    .add(jButton3, 0, 0, Short.MAX_VALUE)
-                                    .add(jCheckBox3))
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING, false)
-                                    .add(jButton4, 0, 0, Short.MAX_VALUE)
-                                    .add(jCheckBox4))
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING, false)
-                                    .add(jButton5, 0, 0, Short.MAX_VALUE)
-                                    .add(jCheckBox5))
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING, false)
-                                    .add(jButton6, 0, 0, Short.MAX_VALUE)
-                                    .add(jCheckBox6))
-                                .addPreferredGap(LayoutStyle.UNRELATED)
-                                .add(jPanel1Layout.createParallelGroup(GroupLayout.TRAILING)
-                                    .add(ftCaptureButton)
-                                    .add(jCheckBox7))))
+                                .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
+                                    .add(jPanel1Layout.createSequentialGroup()
+                                        .add(jPanel1Layout.createParallelGroup(GroupLayout.TRAILING, false)
+                                            .add(GroupLayout.LEADING, jButton1, 0, 0, Short.MAX_VALUE)
+                                            .add(GroupLayout.LEADING, jCheckBox1))
+                                        .addPreferredGap(LayoutStyle.RELATED)
+                                        .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING, false)
+                                            .add(jButton2, 0, 0, Short.MAX_VALUE)
+                                            .add(jCheckBox2))
+                                        .addPreferredGap(LayoutStyle.RELATED)
+                                        .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING, false)
+                                            .add(jButton3, 0, 0, Short.MAX_VALUE)
+                                            .add(jCheckBox3))
+                                        .addPreferredGap(LayoutStyle.RELATED)
+                                        .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING, false)
+                                            .add(jButton4, 0, 0, Short.MAX_VALUE)
+                                            .add(jCheckBox4))
+                                        .addPreferredGap(LayoutStyle.RELATED)
+                                        .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING, false)
+                                            .add(jButton5, 0, 0, Short.MAX_VALUE)
+                                            .add(jCheckBox5))
+                                        .addPreferredGap(LayoutStyle.RELATED)
+                                        .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING, false)
+                                            .add(jButton6, 0, 0, Short.MAX_VALUE)
+                                            .add(jCheckBox6))
+                                        .addPreferredGap(LayoutStyle.UNRELATED)
+                                        .add(jPanel1Layout.createParallelGroup(GroupLayout.TRAILING)
+                                            .add(ftCaptureButton)
+                                            .add(jCheckBox7)))
+                                    .add(timeLabel, GroupLayout.PREFERRED_SIZE, 181, GroupLayout.PREFERRED_SIZE))))
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
                             .add(panelCoxa, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -1170,7 +1184,7 @@ public class HexapodSimulator extends JFrame {
                                     .add(bothCaptureButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .add(cCaptureButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .add(24, 24, 24)
-                                .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
+                                .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(deleteButton)
                                 .add(28, 28, 28)))))
@@ -1218,7 +1232,8 @@ public class HexapodSimulator extends JFrame {
                                         .add(jButton6))
                                     .add(jCheckBox7)
                                     .add(bothCaptureButton))
-                                .add(17, 17, 17)))))
+                                .addPreferredGap(LayoutStyle.RELATED)
+                                .add(timeLabel, GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)))))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(timeBarViewer1, GroupLayout.PREFERRED_SIZE, 252, GroupLayout.PREFERRED_SIZE)
                 .add(122, 122, 122))
@@ -1482,9 +1497,12 @@ public class HexapodSimulator extends JFrame {
     }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void playButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_playButtonActionPerformed
+        if (sequencePlayer != null) {
+            return;
+        }
         if (musicInputStream != null) {
             try {
-                musicPlayer = new MusicPlayer(musicInputStream);
+                musicPlayer = new MusicPlayer(musicInputStream, (int)(playerPos / 26)); // 26ms per frame
                 musicPlayer.start();
                 //musicPlayer.setRunning(true);
             } catch (JavaLayerException ex) {
@@ -1496,6 +1514,10 @@ public class HexapodSimulator extends JFrame {
 
         final SequenceTimebarMarker timeBarMarker = new SequenceTimebarMarker(new JaretDate(1, 1, 1970, 1, 0, 0));
         timeBarViewer1.addMarker(timeBarMarker);
+        if(playerPos != 0) {
+            sequencePlayer.setTime((int)playerPos);
+            timeBarMarker.advanceDateMillis(playerPos);
+        }
         timeBarMarkerTimer = new java.util.Timer("TimeBarMarkerTimer");
         timeBarMarkerTimer.scheduleAtFixedRate(new TimerTask() {
 
@@ -1504,6 +1526,10 @@ public class HexapodSimulator extends JFrame {
                 timeBarMarker.advanceDateMillis(100);
                 sequencePlayer.loadNext(100, 1);
                 timeBarViewer1.repaint();
+                JaretDate markerDate = timeBarMarker.getDate();
+                timeLabel.setText(markerDate.getMinutes()
+                        + ":" + markerDate.getSeconds()
+                        + "." + markerDate.getMillis()/100);
             }
         }, 0, 100);
     }//GEN-LAST:event_playButtonActionPerformed
@@ -1517,9 +1543,12 @@ public class HexapodSimulator extends JFrame {
             } catch (FileNotFoundException ex) {
                 JOptionPane.showMessageDialog(jPanel1,"The music file was not found.", "Error 241", JOptionPane.ERROR_MESSAGE);
             }
+            playerPos = 0;
         }
 
         sequencePlayer.cancel();
+        timeLabel.setText(null);
+        sequencePlayer = null;
         timeBarMarkerTimer.cancel();
         List<TimeBarMarker> markers = timeBarViewer1.getMarkers();
         timeBarViewer1.remMarker(markers.get(0));
@@ -2019,5 +2048,6 @@ public class HexapodSimulator extends JFrame {
     private JList sequenceList;
     private JButton stopButton;
     private TimeBarViewer timeBarViewer1;
+    private JLabel timeLabel;
     // End of variables declaration//GEN-END:variables
 }

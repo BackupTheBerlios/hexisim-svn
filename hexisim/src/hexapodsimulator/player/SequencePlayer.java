@@ -59,6 +59,14 @@ public class SequencePlayer extends Timer {
     }
 
     /**
+     * Sets the current time of the player
+     * @param millis Time in milliseconds
+     */
+    public void setTime(int millis) {
+        time = millis;
+    }
+
+    /**
      * Loads the next angles from the SuperSequence into the timer.
      * @param count The number of values per angle to load
      * @param interval The update interval of the values in milliseconds

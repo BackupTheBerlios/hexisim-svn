@@ -19,6 +19,7 @@ public class MusicPlayer extends Thread {
 
     private AdvancedPlayer _player;
     public static boolean running;  // make this static to allow only one player
+    private int frame;
 
     /**
      * 
@@ -30,28 +31,38 @@ public class MusicPlayer extends Thread {
         _player = player;
     }
 
-    public MusicPlayer(InputStream inputStream) throws JavaLayerException{
+    public MusicPlayer(InputStream inputStream) throws JavaLayerException {
         super("MusicPlayer");
         if(running)
             throw new IllegalStateException("Player is already running");
+        frame = 0;
         _player = new AdvancedPlayer(inputStream);
         running = true;
     }
 
+    public MusicPlayer(InputStream inputStream, int startFrame) throws JavaLayerException {
+        this(inputStream);
+        frame = startFrame;
+    }
+
     public MusicPlayer(File file) throws FileNotFoundException, JavaLayerException {
-        /*super("MusicPlayer");
-        if(running)
-            throw new IllegalStateException("Player is already running");
-        FileInputStream fileInputStream = new FileInputStream(file);
-        _player = new AdvancedPlayer(fileInputStream);
-        running = true;*/
         this(new FileInputStream(file));
     }
+
+    /*public void jumpToFrame(int frame) {
+        if(running) {
+            AdvancedPlayer tempPlayer = null;
+            _player.close();
+            _player = tempPlayer;
+            _frame = frame;
+            start();
+        }
+    }*/
 
     @Override
     public void run() {
         try {
-            _player.play();
+            _player.play(frame, Integer.MAX_VALUE);
         } catch (JavaLayerException ex) {
             //System.out.println("JavaLayerException while starting player.");
         }
