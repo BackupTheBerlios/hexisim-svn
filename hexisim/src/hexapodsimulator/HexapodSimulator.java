@@ -1970,7 +1970,7 @@ public class HexapodSimulator extends JFrame {
             newSequence.setTime(newSequence.getTime() - intervalCopyDialog.getBeginCropTime());
             SuperSeq tempSuperSeq = new SuperSeq();
             tempSuperSeq.addSeq(tempSeq, 0, 0, 0);
-            for (int i = intervalCopyDialog.getBeginCropTime(); i < newSequence.getTime(); i += 10) {
+            for (int i = intervalCopyDialog.getBeginCropTime(); i < (intervalCopyDialog.getBeginCropTime()+newSequence.getTime()); i += 10) {
                 newSequence.addContent(tempSuperSeq.getSingleElementAtTime(i, 0, 1), tempSuperSeq.getSingleElementAtTime(i, 0, 2));
             }
             if(combSecondSequence != null) {
@@ -1979,7 +1979,7 @@ public class HexapodSimulator extends JFrame {
                 newCombSecondSequence.setTime(intervalCopyDialog.getEndCropTime());
                 tempSuperSeq = new SuperSeq();
                 tempSuperSeq.addSeq(tempCombSecondSeq, 0, 0, 0);
-                for (int i = intervalCopyDialog.getBeginCropTime(); i < newCombSecondSequence.getTime(); i += 10) {
+                for (int i = intervalCopyDialog.getBeginCropTime(); i < (intervalCopyDialog.getBeginCropTime()+newCombSecondSequence.getTime()); i += 10) {
                     newCombSecondSequence.addContent(tempSuperSeq.getSingleElementAtTime(i, 0, 1), tempSuperSeq.getSingleElementAtTime(i, 0, 2));
                 }
             }
