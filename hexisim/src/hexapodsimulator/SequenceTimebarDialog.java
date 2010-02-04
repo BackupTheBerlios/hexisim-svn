@@ -1,6 +1,7 @@
 package hexapodsimulator;
 
 import java.util.Date;
+import javax.swing.JTextField;
 
 /**
  * Dialog for the properties of an interval in the timebar
@@ -52,11 +53,29 @@ public class SequenceTimebarDialog extends javax.swing.JDialog {
 
         jLabel2.setText("Start time:");
 
+        minTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                textFieldFocusGained(evt);
+            }
+        });
+
         jLabel3.setText("min");
 
         jLabel4.setText("sec");
 
+        secTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                textFieldFocusGained(evt);
+            }
+        });
+
         jLabel5.setText("msec");
+
+        msecTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                textFieldFocusGained(evt);
+            }
+        });
 
         setTimeButton.setText("Set time");
         setTimeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -150,6 +169,12 @@ public class SequenceTimebarDialog extends javax.swing.JDialog {
         cancelled = true;
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void textFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_textFieldFocusGained
+        JTextField source = (JTextField) evt.getSource();
+        source.setSelectionStart(0);
+        source.setSelectionEnd(source.getText().length());
+    }//GEN-LAST:event_textFieldFocusGained
 
     public void setDate(Date date) {
         this.date = date;

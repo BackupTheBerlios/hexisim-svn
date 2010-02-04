@@ -91,6 +91,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="minTextField">
+      <Events>
+        <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="textFieldFocusGained"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
@@ -103,6 +106,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="secTextField">
+      <Events>
+        <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="textFieldFocusGained"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel5">
       <Properties>
@@ -110,6 +116,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="msecTextField">
+      <Events>
+        <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="textFieldFocusGained"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="setTimeButton">
       <Properties>

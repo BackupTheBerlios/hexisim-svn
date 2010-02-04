@@ -32,6 +32,7 @@ import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -85,6 +86,8 @@ import javax.swing.WindowConstants;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javazoom.jl.decoder.JavaLayerException;
 import org.farng.mp3.MP3File;
 import org.farng.mp3.TagException;
@@ -92,6 +95,8 @@ import org.farng.mp3.id3.AbstractID3v2;
 import org.farng.mp3.id3.ID3v1;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.lib.awtextra.AbsoluteConstraints;
+import org.netbeans.lib.awtextra.AbsoluteLayout;
 
 /**
  * Main class for the Hexapod Simulator
@@ -137,7 +142,7 @@ public class HexapodSimulator extends JFrame {
             } catch (IOException ex1) {
             }
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(jPanel1,"Unable to read the properties file. (IOException)", "Error 301", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(jPanel1, "Unable to read the properties file. (IOException)", "Error 301", JOptionPane.ERROR_MESSAGE);
         } catch (ClassNotFoundException ex) {
             System.out.println("Error 311 - Class HexapodSimulatorProperties not found.");
         }
@@ -152,15 +157,16 @@ public class HexapodSimulator extends JFrame {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                if(e.getButton() == MouseEvent.BUTTON1)
-                try{
-                    (new Robot()).
-                            mouseMove(e.getXOnScreen()-e.getX()+
-                                        (int)((GLRendererFemurTibia.getX()+0.8)/2*panelFemurTibia.getWidth()),
-                                      e.getYOnScreen()-e.getY()+
-                                        (int)((GLRendererFemurTibia.getY()+1.0)/2*panelFemurTibia.getHeight())
-                                     );
-                }catch (AWTException ex){System.out.println("Error 611 - " + ex);}
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    try {
+                        (new Robot()).mouseMove(e.getXOnScreen() - e.getX()
+                                + (int) ((GLRendererFemurTibia.getX() + 0.8) / 2 * panelFemurTibia.getWidth()),
+                                e.getYOnScreen() - e.getY()
+                                + (int) ((GLRendererFemurTibia.getY() + 1.0) / 2 * panelFemurTibia.getHeight()));
+                    } catch (AWTException ex) {
+                        System.out.println("Error 611 - " + ex);
+                    }
+                }
             }
 
             @Override
@@ -177,16 +183,17 @@ public class HexapodSimulator extends JFrame {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                if(e.getButton() == MouseEvent.BUTTON1)
-                try{
-                    double angle=GLRendererCoxa.angle;
-                    (new Robot()).
-                            mouseMove(e.getXOnScreen()-e.getX()+
-                                        (int)((((GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0])) + GLRendererFemurTibia.b2 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0] + GLRendererFemurTibia.angle[1])))* Math.cos(Math.toRadians(90 - angle)))/2+0.5)*panelCoxa.getWidth()),
-                                      e.getYOnScreen()-e.getY()+
-                                        (int)((((GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0])) + GLRendererFemurTibia.b2 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0] + GLRendererFemurTibia.angle[1])))* Math.sin(Math.toRadians(90 - angle)))/2+0.05)*panelCoxa.getHeight())
-                                     );
-                }catch (AWTException ex){System.out.println("Error 612 - " + ex);}
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    try {
+                        double angle = GLRendererCoxa.angle;
+                        (new Robot()).mouseMove(e.getXOnScreen() - e.getX()
+                                + (int) ((((GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0])) + GLRendererFemurTibia.b2 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0] + GLRendererFemurTibia.angle[1]))) * Math.cos(Math.toRadians(90 - angle))) / 2 + 0.5) * panelCoxa.getWidth()),
+                                e.getYOnScreen() - e.getY()
+                                + (int) ((((GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0])) + GLRendererFemurTibia.b2 * Math.cos(Math.toRadians(GLRendererFemurTibia.angle[0] + GLRendererFemurTibia.angle[1]))) * Math.sin(Math.toRadians(90 - angle))) / 2 + 0.05) * panelCoxa.getHeight()));
+                    } catch (AWTException ex) {
+                        System.out.println("Error 612 - " + ex);
+                    }
+                }
             }
 
             @Override
@@ -227,15 +234,15 @@ public class HexapodSimulator extends JFrame {
             try {
                 openProjectFile(properties.projectFile);
             } catch (FileNotFoundException ex) {
-                JOptionPane.showMessageDialog(jPanel1,"The project file " + properties.projectFile.getName() + " was not found.", "Error 101", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(jPanel1, "The project file " + properties.projectFile.getName() + " was not found.", "Error 101", JOptionPane.ERROR_MESSAGE);
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(jPanel1,"Unable to read the project file. (IOException)", "Error 102", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(jPanel1, "Unable to read the project file. (IOException)", "Error 102", JOptionPane.ERROR_MESSAGE);
                 System.out.println(ex);
             } catch (ClassNotFoundException ex) {
                 System.out.println("Error 111 - Class not found.");
                 System.out.println(ex);
             } catch (JavaLayerException ex) {
-                JOptionPane.showMessageDialog(jPanel1,"Unable to load music from the project file.", "Error 103", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(jPanel1, "Unable to load music from the project file.", "Error 103", JOptionPane.ERROR_MESSAGE);
             }
         }
         superSeq.interpolate = properties.interpolateOutput == true ? 1 : 0;
@@ -456,7 +463,7 @@ public class HexapodSimulator extends JFrame {
             private SuperSeq tempSuperSeq;
 
             public void mouseClicked(MouseEvent e) {
-                if(timeBarViewer1.getRowForXY(e.getX(), e.getY()) == null && sequencePlayer != null) {
+                if (timeBarViewer1.getRowForXY(e.getX(), e.getY()) == null && sequencePlayer != null) {
                     stopButton.doClick();
                     playerPos = timeBarViewer1.dateForXY(e.getX(), e.getY()).getDate().getTime();
                     playButton.doClick();
@@ -466,7 +473,7 @@ public class HexapodSimulator extends JFrame {
             public void mousePressed(MouseEvent e) {
                 JaretDate date = timeBarViewer1.dateForXY(e.getX(), e.getY());
                 SequenceTimebarRowModel row = ((SequenceTimebarRowModel) timeBarViewer1.getRowForXY(e.getX(), e.getY()));
-                if(row == null) {
+                if (row == null) {
                     return;
                 }
                 int rowIndex = row.getID();
@@ -507,13 +514,13 @@ public class HexapodSimulator extends JFrame {
                         timeBarViewer1.setInitialDisplayRange(new JaretDate(1, 1, 1970, 1, 0, 0), 90);
                         projectChanged = true;
                     } catch (FileNotFoundException ex) {
-                        JOptionPane.showMessageDialog(jPanel1,"The selected music file was not found.", "Error 201", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(jPanel1, "The selected music file was not found.", "Error 201", JOptionPane.ERROR_MESSAGE);
                     } catch (TagException ex) {
-                        JOptionPane.showMessageDialog(jPanel1,"Unable to read the ID3-tags of the selected music file.", "Error 203", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(jPanel1, "Unable to read the ID3-tags of the selected music file.", "Error 203", JOptionPane.ERROR_MESSAGE);
                     } catch (IOException ex) {
-                        JOptionPane.showMessageDialog(jPanel1,"Unable to read the selected music file. (IOException)", "Error 202", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(jPanel1, "Unable to read the selected music file. (IOException)", "Error 202", JOptionPane.ERROR_MESSAGE);
                     } catch (ArithmeticException ex) {  // Division by zero when calculating song length
-                        JOptionPane.showMessageDialog(jPanel1,"The selected music file is invalid.", "Error 204", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(jPanel1, "The selected music file is invalid.", "Error 204", JOptionPane.ERROR_MESSAGE);
                     }
                     return;
                 }
@@ -750,9 +757,9 @@ public class HexapodSimulator extends JFrame {
                     os.writeObject(properties);
                     os.close();
                 } catch (FileNotFoundException ex) {
-                    JOptionPane.showMessageDialog(jPanel1,"The properties file was not found.", "Error 321", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(jPanel1, "The properties file was not found.", "Error 321", JOptionPane.ERROR_MESSAGE);
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(jPanel1,"Unable to write the properties file. (IOException)", "Error 322", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(jPanel1, "Unable to write the properties file. (IOException)", "Error 322", JOptionPane.ERROR_MESSAGE);
                     System.out.println(ex);
                 }
 
@@ -830,12 +837,16 @@ public class HexapodSimulator extends JFrame {
         ftCaptureButton = new JToggleButton();
         timeBarViewer1 = new TimeBarViewer(null, false, true);
         cCaptureButton = new JToggleButton();
-        deleteButton = new JButton();
         playButton = new JButton();
         stopButton = new JButton();
         jCheckBox7 = new JCheckBox();
         bothCaptureButton = new JToggleButton();
         timeLabel = new JLabel();
+        jPanel2 = new JPanel();
+        deleteButton = new JButton();
+        renameButton = new JButton();
+        changeTimeButton = new JButton();
+        copyButton = new JButton();
         jMenuBar1 = new JMenuBar();
         fileMenu = new JMenu();
         openProjectMenuItem = new JMenuItem();
@@ -907,7 +918,7 @@ public class HexapodSimulator extends JFrame {
         panel3dModel.setLayout(panel3dModelLayout);
         panel3dModelLayout.setHorizontalGroup(
             panel3dModelLayout.createParallelGroup(GroupLayout.LEADING)
-            .add(0, 481, Short.MAX_VALUE)
+            .add(0, 484, Short.MAX_VALUE)
         );
         panel3dModelLayout.setVerticalGroup(
             panel3dModelLayout.createParallelGroup(GroupLayout.LEADING)
@@ -1086,13 +1097,6 @@ public class HexapodSimulator extends JFrame {
             }
         });
 
-        deleteButton.setText("Delete");
-        deleteButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                deleteButtonActionPerformed(evt);
-            }
-        });
-
         playButton.setIcon(new ImageIcon(getClass().getResource("/hexapodsimulator/play.png"))); // NOI18N
         playButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -1116,14 +1120,48 @@ public class HexapodSimulator extends JFrame {
         bothCaptureButton.setText("Capture");
         bothCaptureButton.setToolTipText("Capture both planes with (nearly) locked height");
         bothCaptureButton.setEnabled(false);
-
         bothCaptureButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 bothCaptureButtonActionPerformed(evt);
             }
         });
 
-        timeLabel.setFont(new Font("Lucida Grande", 0, 16)); // NOI18N
+        timeLabel.setFont(new Font("Lucida Grande", 0, 16));
+
+        jPanel2.setLayout(new AbsoluteLayout());
+
+        deleteButton.setText("Delete");
+        deleteButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                deleteButtonActionPerformed(evt);
+            }
+        });
+        jPanel2.add(deleteButton, new AbsoluteConstraints(0, 0, 93, 25));
+
+        renameButton.setText("Rename");
+        renameButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                renameButtonActionPerformed(evt);
+            }
+        });
+        jPanel2.add(renameButton, new AbsoluteConstraints(0, 20, -1, 25));
+
+        changeTimeButton.setText("ch Time");
+        changeTimeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                changeTimeButtonActionPerformed(evt);
+            }
+        });
+        jPanel2.add(changeTimeButton, new AbsoluteConstraints(0, 40, 93, -1));
+
+        copyButton.setText("copy");
+        copyButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                copyButtonActionPerformed(evt);
+            }
+        });
+        jPanel2.add(copyButton, new AbsoluteConstraints(0, 60, 93, -1));
+
         GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -1139,7 +1177,7 @@ public class HexapodSimulator extends JFrame {
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(stopButton, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.UNRELATED)
-                                .add(rotationSlider, GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE))
+                                .add(rotationSlider, GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE))
                             .add(panel3dModel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
@@ -1184,16 +1222,15 @@ public class HexapodSimulator extends JFrame {
                                     .add(bothCaptureButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .add(cCaptureButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .add(24, 24, 24)
-                                .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
+                                .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
                                 .addPreferredGap(LayoutStyle.RELATED)
-                                .add(deleteButton)
-                                .add(28, 28, 28)))))
+                                .add(jPanel2, GroupLayout.PREFERRED_SIZE, 104, GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
+                .add(20, 20, 20)
                 .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
                     .add(jPanel1Layout.createSequentialGroup()
                         .add(panel3dModel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -1209,7 +1246,7 @@ public class HexapodSimulator extends JFrame {
                             .add(panelFemurTibia, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(jPanel1Layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(deleteButton)
+                            .add(jPanel2, GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
                             .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
                             .add(jPanel1Layout.createSequentialGroup()
                                 .add(jPanel1Layout.createParallelGroup(GroupLayout.BASELINE)
@@ -1502,11 +1539,11 @@ public class HexapodSimulator extends JFrame {
         }
         if (musicInputStream != null) {
             try {
-                musicPlayer = new MusicPlayer(musicInputStream, (int)(playerPos / 26)); // 26ms per frame
+                musicPlayer = new MusicPlayer(musicInputStream, (int) (playerPos / 26)); // 26ms per frame
                 musicPlayer.start();
                 //musicPlayer.setRunning(true);
             } catch (JavaLayerException ex) {
-                JOptionPane.showMessageDialog(jPanel1,"Unable to open the music file.", "Error 221", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(jPanel1, "Unable to open the music file.", "Error 221", JOptionPane.ERROR_MESSAGE);
             }
         }
 
@@ -1514,8 +1551,8 @@ public class HexapodSimulator extends JFrame {
 
         final SequenceTimebarMarker timeBarMarker = new SequenceTimebarMarker(new JaretDate(1, 1, 1970, 1, 0, 0));
         timeBarViewer1.addMarker(timeBarMarker);
-        if(playerPos != 0) {
-            sequencePlayer.setTime((int)playerPos);
+        if (playerPos != 0) {
+            sequencePlayer.setTime((int) playerPos);
             timeBarMarker.advanceDateMillis(playerPos);
         }
         timeBarMarkerTimer = new java.util.Timer("TimeBarMarkerTimer");
@@ -1529,7 +1566,7 @@ public class HexapodSimulator extends JFrame {
                 JaretDate markerDate = timeBarMarker.getDate();
                 timeLabel.setText(markerDate.getMinutes()
                         + ":" + markerDate.getSeconds()
-                        + "." + markerDate.getMillis()/100);
+                        + "." + markerDate.getMillis() / 100);
             }
         }, 0, 100);
     }//GEN-LAST:event_playButtonActionPerformed
@@ -1541,7 +1578,7 @@ public class HexapodSimulator extends JFrame {
             try {
                 musicInputStream = new FileInputStream(musicFile);
             } catch (FileNotFoundException ex) {
-                JOptionPane.showMessageDialog(jPanel1,"The music file was not found.", "Error 241", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(jPanel1, "The music file was not found.", "Error 241", JOptionPane.ERROR_MESSAGE);
             }
             playerPos = 0;
         }
@@ -1564,7 +1601,7 @@ public class HexapodSimulator extends JFrame {
         try {
             superSeq.angletofile(f);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(jPanel1,"An error occured while exporting the project.", "Error 401", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(jPanel1, "An error occured while exporting the project.", "Error 401", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
         }
     }//GEN-LAST:event_exportMenuItemActionPerformed
@@ -1596,7 +1633,7 @@ public class HexapodSimulator extends JFrame {
         try {
             saveProjectFile(f);
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(jPanel1,"Unable to save the project file. (IOException)", "Error 141", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(jPanel1, "Unable to save the project file. (IOException)", "Error 141", JOptionPane.ERROR_MESSAGE);
             System.out.println(ex);
         }
     }//GEN-LAST:event_saveProjectAsMenuItemActionPerformed
@@ -1605,7 +1642,7 @@ public class HexapodSimulator extends JFrame {
         try {
             closeProjectFile();
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(jPanel1,"Unable to close the project file. (IOException)", "Error 143", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(jPanel1, "Unable to close the project file. (IOException)", "Error 143", JOptionPane.ERROR_MESSAGE);
             System.out.println(ex);
         }
     }//GEN-LAST:event_closeProjectMenuItemActionPerformed
@@ -1622,17 +1659,17 @@ public class HexapodSimulator extends JFrame {
         try {
             openProjectFile(f);
         } catch (FileNotFoundException ex) {
-            JOptionPane.showMessageDialog(jPanel1,"The project file " + f.getName() + " was not found.", "Error 121", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(jPanel1, "The project file " + f.getName() + " was not found.", "Error 121", JOptionPane.ERROR_MESSAGE);
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(jPanel1,"Unable to open the project file. (IOException)", "Error 122", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(jPanel1, "Unable to open the project file. (IOException)", "Error 122", JOptionPane.ERROR_MESSAGE);
             System.out.println(ex);
         } catch (NullPointerException ex) {
-            JOptionPane.showMessageDialog(jPanel1,"An error occured while opening the Project File", "Error 124", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(jPanel1, "An error occured while opening the Project File", "Error 124", JOptionPane.ERROR_MESSAGE);
             System.out.println(ex);
         } catch (ClassNotFoundException ex) {
             System.out.println("Error 131 - An error occured while opening the Project File: A class was not found");
         } catch (JavaLayerException ex) {
-            JOptionPane.showMessageDialog(jPanel1,"Unable to load music from the project file.", "Error 123", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(jPanel1, "Unable to load music from the project file.", "Error 123", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_openProjectMenuItemActionPerformed
 
@@ -1643,7 +1680,7 @@ public class HexapodSimulator extends JFrame {
             try {
                 saveProjectFile(properties.projectFile);
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(jPanel1,"Unable to save the project file. (IOException)", "Error 142", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(jPanel1, "Unable to save the project file. (IOException)", "Error 142", JOptionPane.ERROR_MESSAGE);
                 System.out.println(ex);
             }
         }
@@ -1682,9 +1719,9 @@ public class HexapodSimulator extends JFrame {
             sequenceList.setDragEnabled(true);
             jScrollPane1.setViewportView(sequenceList);
         } catch (FileNotFoundException ex) {
-            JOptionPane.showMessageDialog(jPanel1,"The selected project file was not found.", "Error 161", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(jPanel1, "The selected project file was not found.", "Error 161", JOptionPane.ERROR_MESSAGE);
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(jPanel1,"Unable to open the project file. (IOException)", "Error 162", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(jPanel1, "Unable to open the project file. (IOException)", "Error 162", JOptionPane.ERROR_MESSAGE);
             System.out.println(ex);
         } catch (ClassNotFoundException ex) {
             System.out.println("Error 171 - An error occured while opening the Project File to import the sequences: A class was not found");
@@ -1814,6 +1851,155 @@ public class HexapodSimulator extends JFrame {
             femurTibiaKneeDownRadioButtonMenuItem.setSelected(true);
         }
     }//GEN-LAST:event_femurTibiaKneeDownRadioButtonMenuItemActionPerformed
+
+    private void renameButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_renameButtonActionPerformed
+        String name;
+        int index = sequenceList.getSelectedIndex();
+        do {
+            name = JOptionPane.showInputDialog("Name?");
+            if (name == null) {
+                return;
+            }
+        } while (getSequenceByName(sequenceVector.get(index).getName().split("_")[0] + "_" + name) != null);
+        HexiSequenz combSecondSequence = null;
+        int combSecondSequenceIndex = -1;
+
+        if (sequenceVector.get(index).getName().split("_")[0].equals("combft")) {
+            combSecondSequence = getSequenceByName("combc_" + sequenceVector.get(index).getName().substring(7));
+        } else if (sequenceVector.get(index).getName().split("_")[0].equals("combc")) {
+            combSecondSequence = getSequenceByName("combft_" + sequenceVector.get(index).getName().substring(6));
+        }
+        if (combSecondSequence != null) {
+            combSecondSequenceIndex = sequenceVector.indexOf(combSecondSequence);
+            combSecondSequence.setName(combSecondSequence.getName().split("_")[0] + "_" + name);
+        }
+
+        sequenceVector.elementAt(index).setName(sequenceVector.elementAt(index).getName().split("_")[0] + "_" + name);
+        ListModel items = sequenceList.getModel();
+        Vector listentries = new Vector(items.getSize());
+        for (int i = 0; i < listentries.capacity(); i++) {
+            if (i == index || i == combSecondSequenceIndex) {
+                listentries.add(sequenceVector.elementAt(i).getName());
+            } else {
+                listentries.add(items.getElementAt(i));
+            }
+        }
+        sequenceList = new JList(listentries);
+        sequenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        sequenceList.setDragEnabled(true);
+        jScrollPane1.setViewportView(sequenceList);
+        projectChanged = true;
+    }//GEN-LAST:event_renameButtonActionPerformed
+
+    private void changeTimeButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_changeTimeButtonActionPerformed
+        int index = sequenceList.getSelectedIndex();
+        String input = JOptionPane.showInputDialog("Time?", sequenceVector.elementAt(index).getTime());
+        if (input == null) {
+            return;
+        }
+        int time = Integer.parseInt(input);
+        HexiSequenz combSecondSequence = null;
+
+        if (sequenceVector.get(index).getName().split("_")[0].equals("combft")) {
+            combSecondSequence = getSequenceByName("combc_" + sequenceVector.get(index).getName().substring(7));
+        } else if (sequenceVector.get(index).getName().split("_")[0].equals("combc")) {
+            combSecondSequence = getSequenceByName("combft_" + sequenceVector.get(index).getName().substring(6));
+        }
+        if (combSecondSequence != null) {
+            combSecondSequence.setTime(time);
+        }
+        sequenceVector.elementAt(index).setTime(time);
+        projectChanged = true;
+    }//GEN-LAST:event_changeTimeButtonActionPerformed
+
+    private void copyButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_copyButtonActionPerformed
+        int index = sequenceList.getSelectedIndex();
+        HexiSequenz sequence = sequenceVector.elementAt(index);
+        String prefix = sequence.getName().split("_")[0];
+        String name = sequence.getName().substring(sequence.getName().indexOf("_") + 1);
+        HexiSequenz combSecondSequence = null;
+        if (sequenceVector.get(index).getName().split("_")[0].equals("combft")) {
+            combSecondSequence = getSequenceByName("combc_" + sequenceVector.get(index).getName().substring(7));
+        } else if (sequenceVector.get(index).getName().split("_")[0].equals("combc")) {
+            combSecondSequence = getSequenceByName("combft_" + sequenceVector.get(index).getName().substring(6));
+        }
+
+        IntervalCopyDialog intervalCopyDialog = new IntervalCopyDialog(this, name, sequence.getTime());
+        intervalCopyDialog.setVisible(true);
+        if (intervalCopyDialog.isCancelled()
+                || getSequenceByName(prefix + "_" + intervalCopyDialog.getNewName()) != null
+                || intervalCopyDialog.getBeginCropTime() >= intervalCopyDialog.getEndCropTime()) {
+            return;
+        }
+        HexiSequenz newSequence;
+        HexiSequenz newCombSecondSequence = null;
+        newSequence = (HexiSequenz) DeepObjectCopy.getDeepCopy(sequence);
+        newSequence.setName(prefix + "_" + intervalCopyDialog.getNewName());
+        sequenceVector.add(newSequence);
+        if (combSecondSequence != null) {
+            newCombSecondSequence = (HexiSequenz) DeepObjectCopy.getDeepCopy(combSecondSequence);
+            String combPrefix = (prefix.equals("combft")) ? "combc" : "combft";
+            newCombSecondSequence.setName(combPrefix + "_" + intervalCopyDialog.getNewName());
+            sequenceVector.add(newCombSecondSequence);
+        }
+
+        if (intervalCopyDialog.isEndCropped()) {
+            HexiSequenz tempSeq = (HexiSequenz) DeepObjectCopy.getDeepCopy(newSequence);
+            newSequence.clear();
+            newSequence.setTime(intervalCopyDialog.getEndCropTime());
+            SuperSeq tempSuperSeq = new SuperSeq();
+            tempSuperSeq.addSeq(tempSeq, 0, 0, 0);
+            for (int i = 0; i < intervalCopyDialog.getEndCropTime(); i += 10) {
+                newSequence.addContent(tempSuperSeq.getSingleElementAtTime(i, 0, 1), tempSuperSeq.getSingleElementAtTime(i, 0, 2));
+            }
+            if(combSecondSequence != null) {
+                HexiSequenz tempCombSecondSeq = (HexiSequenz) DeepObjectCopy.getDeepCopy(newCombSecondSequence);
+                newCombSecondSequence.clear();
+                newCombSecondSequence.setTime(intervalCopyDialog.getEndCropTime());
+                tempSuperSeq = new SuperSeq();
+                tempSuperSeq.addSeq(tempCombSecondSeq, 0, 0, 0);
+                for (int i = 0; i < intervalCopyDialog.getEndCropTime(); i += 10) {
+                    newCombSecondSequence.addContent(tempSuperSeq.getSingleElementAtTime(i, 0, 1), tempSuperSeq.getSingleElementAtTime(i, 0, 2));
+                }
+            }
+        }
+        
+        if (intervalCopyDialog.isBeginCropped()) {
+            HexiSequenz tempSeq = (HexiSequenz) DeepObjectCopy.getDeepCopy(newSequence);
+            newSequence.clear();
+            newSequence.setTime(newSequence.getTime() - intervalCopyDialog.getBeginCropTime());
+            SuperSeq tempSuperSeq = new SuperSeq();
+            tempSuperSeq.addSeq(tempSeq, 0, 0, 0);
+            for (int i = intervalCopyDialog.getBeginCropTime(); i < newSequence.getTime(); i += 10) {
+                newSequence.addContent(tempSuperSeq.getSingleElementAtTime(i, 0, 1), tempSuperSeq.getSingleElementAtTime(i, 0, 2));
+            }
+            if(combSecondSequence != null) {
+                HexiSequenz tempCombSecondSeq = (HexiSequenz) DeepObjectCopy.getDeepCopy(newCombSecondSequence);
+                newCombSecondSequence.clear();
+                newCombSecondSequence.setTime(intervalCopyDialog.getEndCropTime());
+                tempSuperSeq = new SuperSeq();
+                tempSuperSeq.addSeq(tempCombSecondSeq, 0, 0, 0);
+                for (int i = intervalCopyDialog.getBeginCropTime(); i < newCombSecondSequence.getTime(); i += 10) {
+                    newCombSecondSequence.addContent(tempSuperSeq.getSingleElementAtTime(i, 0, 1), tempSuperSeq.getSingleElementAtTime(i, 0, 2));
+                }
+            }
+        }
+
+        ListModel items = sequenceList.getModel();
+        Vector listentries = new Vector(items.getSize());
+        for (int i = 0; i < listentries.capacity(); i++) {
+            listentries.add(items.getElementAt(i));
+        }
+        listentries.add(newSequence.getName());
+        if (combSecondSequence != null) {
+            listentries.add(newCombSecondSequence.getName());
+        }
+        sequenceList = new JList(listentries);
+        sequenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        sequenceList.setDragEnabled(true);
+        jScrollPane1.setViewportView(sequenceList);
+        projectChanged = true;
+    }//GEN-LAST:event_copyButtonActionPerformed
 
     private HexiSequenz getSequenceByName(String name) {
         HexiSequenz seq = null;
@@ -1997,7 +2183,9 @@ public class HexapodSimulator extends JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JToggleButton bothCaptureButton;
     private JToggleButton cCaptureButton;
+    private JButton changeTimeButton;
     private JMenuItem closeProjectMenuItem;
+    private JButton copyButton;
     private JRadioButtonMenuItem coxaHoldXRadioButtonMenuItem;
     private JRadioButtonMenuItem coxaHoldYRadioButtonMenuItem;
     private JPopupMenu coxaPopupMenu;
@@ -2030,6 +2218,7 @@ public class HexapodSimulator extends JFrame {
     private JCheckBox jCheckBox7;
     private JMenuBar jMenuBar1;
     private JPanel jPanel1;
+    private JPanel jPanel2;
     private JScrollPane jScrollPane1;
     private JSeparator jSeparator1;
     private JSeparator jSeparator2;
@@ -2042,6 +2231,7 @@ public class HexapodSimulator extends JFrame {
     private GLJPanel panelFemurTibia;
     private JButton playButton;
     private JMenu propertiesMenu;
+    private JButton renameButton;
     private JSlider rotationSlider;
     private JMenuItem saveProjectAsMenuItem;
     private JMenuItem saveProjectMenuItem;

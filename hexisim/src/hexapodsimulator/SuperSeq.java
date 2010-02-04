@@ -363,20 +363,20 @@ public class SuperSeq implements Serializable {
      * @throws Exception Problems ie with File-Access, Memory-Allocation, ...
      */
     public void angletofile(File file) throws Exception {
-        if (angles2 == null) {
-            toSteps(20);
-        }
+        //if (angles2 == null) {
+            toSteps(40);
+        //}
         FileOutputStream fs = new FileOutputStream(file);
         DataOutputStream ds = new DataOutputStream(fs);
 
         //ds.writeByte((byte) 0);
         for (int i = 0; i
                 < angles2.firstElement().firstElement().hexiSequenz.getLength(); i++) {
-            for (int j = 0; j < 6; j++) {
+            for (int j = 5; j >= 0; j--) {
                 ds.writeShort((int) (Math.toRadians(angles2.get(j * 2 + 1).firstElement().hexiSequenz.getAngle(i)[0]) * 1024 + 1609));
                 ds.writeShort((int) (Math.toRadians(-angles2.get(j * 2).firstElement().hexiSequenz.getAngle(i)[0]) * 1024 + 2145));
                 ds.writeShort((int) (Math.toRadians(-angles2.get(j * 2).firstElement().hexiSequenz.getAngle(i)[1]) * 1024 + 2680));
-                if (j == 1 || j == 3) {
+                if (j == 2 || j == 4) {
                     ds.write(new byte[6]);
                 }
             }

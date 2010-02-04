@@ -143,6 +143,13 @@ public class HexiSequenz implements Serializable {
     }
 
     /**
+     * Removes all values of the vector.
+     */
+    public void clear() {
+        angle.clear();
+    }
+
+    /**
      * Removes repeated values from the vector
      * and trims the capacity of the vector to its size.
      */
