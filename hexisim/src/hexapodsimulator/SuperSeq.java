@@ -168,7 +168,7 @@ public class SuperSeq implements Serializable {
                 return angle == 0 ? 0. : 45.;//�0
             } else if (interpolate == 1) {
                 //TO-DO interpolieren // Update - sollte gehen, testen
-                return interpolate(0.,
+                return interpolate(angle == 0 ? 0. : 45.,
                         getLegAngle(leg, 0, 0, angle),
                         (double) time / (double) angles.elementAt(leg * 2 + ((angle == 0) ? 1 : 0)).elementAt(0).pos);
             }

@@ -143,6 +143,26 @@ public class HexiSequenz implements Serializable {
     }
 
     /**
+     * Removes the value at the specified index.
+     * @param index The index of the element to remove
+     */
+    public void remContent(int index) {
+        angle.remove(index);
+    }
+
+    /**
+     * Removes the values at the specified indices.
+     * @param indices An array containing the indices of the elements to remove
+     */
+    public void remContent(int[] indices) {
+        Vector<double[]> elementsToDelete = new Vector<double[]>();
+        for(int i=0; i<indices.length; i++) {
+            elementsToDelete.add(angle.elementAt(indices[i]));
+        }
+        angle.removeAll(elementsToDelete);
+    }
+
+    /**
      * Removes all values of the vector.
      */
     public void clear() {
@@ -168,12 +188,20 @@ public class HexiSequenz implements Serializable {
                     cleanedAngles.add(angle.elementAt(i));
                 }
             }
+            if(angle.elementAt(angle.size()-2)[0] != angle.lastElement()[0]
+                        || angle.elementAt(angle.size()-2)[1] != angle.lastElement()[1]) {
+                cleanedAngles.add(angle.lastElement());
+            }
         }
         angle = cleanedAngles;
         angle.trimToSize();
     }
 
-    public void normalize() {
+    /**
+     * Normalizes the sequence so that only local maxima/minima are part of the sequence
+     * @param toleranceAngle The allowed tolerance angle to identify a value as local maximum/minimum
+     */
+    public void normalize(double toleranceAngle) {
         Vector<double[]> normalizedAngles = new Vector<double[]>();
         if (ValueCount == 1) {
             boolean rising = false;
@@ -181,13 +209,13 @@ public class HexiSequenz implements Serializable {
             for (int i = 0; i < (angle.size() - 1); i++) {
                 prevAngle = angle.elementAt(i);
                 if (i == 0
-                        || rising && angle.elementAt(i + 1)[0] < (prevAngle[0] - 3)
-                        || !rising && angle.elementAt(i + 1)[0] > (prevAngle[0] + 3)) {
+                        || rising && angle.elementAt(i + 1)[0] < (prevAngle[0] - toleranceAngle)
+                        || !rising && angle.elementAt(i + 1)[0] > (prevAngle[0] + toleranceAngle)) {
                     normalizedAngles.add(prevAngle);
                 }
-                if(rising && angle.elementAt(i+1)[0] < (prevAngle[0]-3))
+                if(rising && angle.elementAt(i+1)[0] < (prevAngle[0]-toleranceAngle))
                     rising = false;
-                else if(!rising && angle.elementAt(i+1)[0] > (prevAngle[0]+3))
+                else if(!rising && angle.elementAt(i+1)[0] > (prevAngle[0]+toleranceAngle))
                     rising = true;
             }
             normalizedAngles.add(angle.lastElement());
@@ -197,20 +225,20 @@ public class HexiSequenz implements Serializable {
             for (int i = 0; i < (angle.size() - 1); i++) {
                 prevAngle = angle.elementAt(i);
                 if (i == 0
-                        || rising[0] && angle.elementAt(i + 1)[0] < (prevAngle[0] - 3)
-                        || !rising[0] && angle.elementAt(i + 1)[0] > (prevAngle[0] + 3)
-                        || rising[1] && angle.elementAt(i + 1)[1] < (prevAngle[1] - 3)
-                        || !rising[1] && angle.elementAt(i + 1)[1] > (prevAngle[1] + 3)) {
+                        || rising[0] && angle.elementAt(i + 1)[0] < (prevAngle[0] - toleranceAngle)
+                        || !rising[0] && angle.elementAt(i + 1)[0] > (prevAngle[0] + toleranceAngle)
+                        || rising[1] && angle.elementAt(i + 1)[1] < (prevAngle[1] - toleranceAngle)
+                        || !rising[1] && angle.elementAt(i + 1)[1] > (prevAngle[1] + toleranceAngle)) {
                     normalizedAngles.add(prevAngle);
                 }
-                if(rising[0] && angle.elementAt(i+1)[0] < (prevAngle[0]-3))
+                if(rising[0] && angle.elementAt(i+1)[0] < (prevAngle[0]-toleranceAngle))
                     rising[0] = false;
-                else if(!rising[0] && angle.elementAt(i+1)[0] > (prevAngle[0]+3)
+                else if(!rising[0] && angle.elementAt(i+1)[0] > (prevAngle[0]+toleranceAngle)
                         || !rising[0] && i==1 && angle.elementAt(i+1)[0] > prevAngle[0])
                     rising[0] = true;
-                if(rising[1] && angle.elementAt(i+1)[1] < (prevAngle[1]-3))
+                if(rising[1] && angle.elementAt(i+1)[1] < (prevAngle[1]-toleranceAngle))
                     rising[1] = false;
-                else if(!rising[1] && angle.elementAt(i+1)[1] > (prevAngle[1]+3)
+                else if(!rising[1] && angle.elementAt(i+1)[1] > (prevAngle[1]+toleranceAngle)
                         || !rising[1] && i==1 && angle.elementAt(i+1)[1] > prevAngle[1])
                     rising[1] = true;
             }
@@ -218,6 +246,14 @@ public class HexiSequenz implements Serializable {
         }
         angle = normalizedAngles;
         angle.trimToSize();
+    }
+
+    /**
+     * Normalizes the sequence so that only local maxima/minima are part of the sequence
+     * This method is equal to normalize(3) (with a tolerance angle of 3 degrees)
+     */
+    public void normalize() {
+        normalize(3);
     }
 
     @Override
