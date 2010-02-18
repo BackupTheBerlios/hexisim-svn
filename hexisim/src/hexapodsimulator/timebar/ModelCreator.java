@@ -17,7 +17,6 @@ public class ModelCreator {
 
     private static Vector<Vector<EventInterval>> intervals = new Vector<Vector<EventInterval>>(13); // 2x6 leg, 1 music
     private static Vector<Vector<int[]>> intervalCombinations = new Vector<Vector<int[]>>();
-
     // commited:
     private static Vector<Vector<EventInterval>> savedIntervals = new Vector<Vector<EventInterval>>(13);
     private static Vector<Vector<int[]>> savedIntervalCombinations = new Vector<Vector<int[]>>();
@@ -59,7 +58,7 @@ public class ModelCreator {
      * @param index2 Index of the second interval
      */
     public static void combineIntervals(int row1, int index1, int row2, int index2) {
-        if(getCombinationIndex(row2, index2) != -1) {
+        if (getCombinationIndex(row2, index2) != -1) {
             return;
         }
         boolean elementAdded = false;
@@ -126,7 +125,7 @@ public class ModelCreator {
      * or null if the specified interval is not part of a combination.
      */
     public static Vector<Integer> getCombinedIntervalRows(int row, int index) {
-        Vector <Integer> combinedIntervalRows = new Vector<Integer>();
+        Vector<Integer> combinedIntervalRows = new Vector<Integer>();
         int combinationIndex = getCombinationIndex(row, index);
         if (combinationIndex == -1) {
             return null;
@@ -201,6 +200,16 @@ public class ModelCreator {
         int combinationIndex = getCombinationIndex(row, index);
         if (combinationIndex == -1) {
             intervals.elementAt(row).remove(index);
+            for (int i = 0; i < intervalCombinations.size(); i++) {
+                for (int j = 0; j < intervalCombinations.elementAt(i).size(); j++) {
+                    if (intervalCombinations.elementAt(i).elementAt(j)[0] > index) {
+                        intervalCombinations.elementAt(i).elementAt(j)[0]--;
+                    }
+                    if (intervalCombinations.elementAt(i).elementAt(j)[1] > index) {
+                        intervalCombinations.elementAt(i).elementAt(j)[1]--;
+                    }
+                }
+            }
         } else {
             for (int i = 0; i < intervalCombinations.elementAt(combinationIndex).size(); i++) {
                 intervals.elementAt(intervalCombinations.elementAt(combinationIndex).elementAt(i)[0]).remove(intervalCombinations.elementAt(combinationIndex).elementAt(i)[1]);
@@ -319,7 +328,7 @@ public class ModelCreator {
      * This allows to revert this state later.
      */
     public static void saveIntervalChanges() {
-        savedIntervals = (Vector<Vector<EventInterval>>)DeepObjectCopy.getDeepCopy(intervals);
+        savedIntervals = (Vector<Vector<EventInterval>>) DeepObjectCopy.getDeepCopy(intervals);
     }
 
     /**
@@ -327,7 +336,7 @@ public class ModelCreator {
      * This allows to revert this state later.
      */
     public static void saveCombinationChanges() {
-        savedIntervalCombinations = (Vector<Vector<int[]>>)DeepObjectCopy.getDeepCopy(intervalCombinations);
+        savedIntervalCombinations = (Vector<Vector<int[]>>) DeepObjectCopy.getDeepCopy(intervalCombinations);
     }
 
     /**
@@ -344,7 +353,7 @@ public class ModelCreator {
      * since the last call of saveChanges or saveIntervalChanges.
      */
     public static void revertIntervalChanges() {
-        intervals = (Vector<Vector<EventInterval>>)DeepObjectCopy.getDeepCopy(savedIntervals);
+        intervals = (Vector<Vector<EventInterval>>) DeepObjectCopy.getDeepCopy(savedIntervals);
     }
 
     /**
@@ -352,7 +361,7 @@ public class ModelCreator {
      * since the last call of saveChanges or saveCombinationChanges.
      */
     public static void revertCombinationChanges() {
-        intervalCombinations = (Vector<Vector<int[]>>)DeepObjectCopy.getDeepCopy(savedIntervalCombinations);
+        intervalCombinations = (Vector<Vector<int[]>>) DeepObjectCopy.getDeepCopy(savedIntervalCombinations);
     }
 
     /**

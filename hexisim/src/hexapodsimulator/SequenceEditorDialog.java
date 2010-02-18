@@ -41,13 +41,20 @@ public class SequenceEditorDialog extends javax.swing.JDialog {
         @Override
         public void setValueAt(Object value, int row, int col) {
             //TODO check whether entered values are in the valid range
+            double valueD = Double.parseDouble((String) value);
+            if ((valueCount == 1 && (valueD < -45 || valueD > 45))
+                    || (valueCount == 2 && col == 1 && (valueD < -63.3 || valueD > 102.8))
+                    || (valueCount == 2 && col == 2 && (valueD < -24 || valueD > 149.9))) {
+                return;
+            }
+
             HexiSequenz changedSequence = new HexiSequenz();
             for (int i = 0; i < _sequence.getLength(); i++) {
                 if (i == row) {
                     if (col == 1) {
-                        changedSequence.addContent(Double.parseDouble((String) value), _sequence.getAngle(i)[1]);
+                        changedSequence.addContent(valueD, _sequence.getAngle(i)[1]);
                     } else {
-                        changedSequence.addContent(_sequence.getAngle(i)[0], Double.parseDouble((String) value));
+                        changedSequence.addContent(_sequence.getAngle(i)[0], valueD);
                     }
                 } else {
                     changedSequence.addContent(_sequence.getAngle(i));
@@ -221,7 +228,7 @@ public class SequenceEditorDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_normalizeButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        int index = table.getSelectedRow();
+        int index = table.getSelectedRow() != -1 ? table.getSelectedRow() : table.getRowCount() - 1;
         HexiSequenz changedSequence = new HexiSequenz();
         for (int i = 0; i < _sequence.getLength(); i++) {
             changedSequence.addContent(_sequence.getAngle(i));
@@ -236,6 +243,9 @@ public class SequenceEditorDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
+        if (table.getRowCount() == 1) {
+            return;
+        }
         int[] indices = table.getSelectedRows();
         _sequence.remContent(indices);
         table.setModel(new TableModelImpl());

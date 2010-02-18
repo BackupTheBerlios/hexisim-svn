@@ -316,6 +316,23 @@ public class SuperSeq implements Serializable {
     }
 
     /**
+     * Returns a reference of the sequence with the specified time position.
+     * @param pos The start time of the sequence in milliseconds
+     * @param leg The leg number (0-5)
+     * @param dim Dimension (0/1)
+     * @return The sequence that starts at the specified time or null
+     * if no sequence was found
+     */
+    public HexiSequenz getSeqByTime(int pos, int leg, int dim) {
+        for (int i = 0; i < angles.size(); i++) {
+            if(angles.elementAt(leg * 2 + dim).elementAt(i).pos == pos) {
+                return angles.elementAt(leg * 2 + dim).elementAt(i).hexiSequenz;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the amount of values in a Sequence
      * @param leg Bein 0-5
      * @param dim Dimension (0/1)
