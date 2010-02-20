@@ -12,9 +12,13 @@ public class IntervalCopyDialog extends javax.swing.JDialog {
     private int beginCropTime;
     private boolean endCropped;
     private int endCropTime;
+    private double rotationX;
+    private double rotationY;
+    private double rotationAngle;
+    private boolean rotated;
 
     /** Creates new form IntervalCopyDialog */
-    public IntervalCopyDialog(java.awt.Frame parent, String name, int duration) {
+    public IntervalCopyDialog(java.awt.Frame parent, String name, int duration, double rotX, double rotY) {
         super(parent, true);
         initComponents();
         newNameTextField.setText(name + "_copy");
@@ -22,6 +26,8 @@ public class IntervalCopyDialog extends javax.swing.JDialog {
         newNameTextField.setSelectionEnd(newNameTextField.getText().length());
         cropBeginTextField.setText("0");
         cropEndTextField.setText(Integer.toString(duration));
+        xTextField.setText(Double.toString(rotX));
+        yTextField.setText(Double.toString(rotY));
         getRootPane().setDefaultButton(copyButton);
     }
 
@@ -48,6 +54,13 @@ public class IntervalCopyDialog extends javax.swing.JDialog {
         jSeparator2 = new javax.swing.JSeparator();
         copyButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        rotateCheckBox = new javax.swing.JCheckBox();
+        rotateLabel1 = new javax.swing.JLabel();
+        xTextField = new javax.swing.JTextField();
+        rotateLabel2 = new javax.swing.JLabel();
+        yTextField = new javax.swing.JTextField();
+        rotateLabel3 = new javax.swing.JLabel();
+        angleComboBox = new javax.swing.JComboBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -97,6 +110,30 @@ public class IntervalCopyDialog extends javax.swing.JDialog {
             }
         });
 
+        rotateCheckBox.setText("Rotate");
+        rotateCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rotateCheckBoxActionPerformed(evt);
+            }
+        });
+
+        rotateLabel1.setText("X");
+        rotateLabel1.setEnabled(false);
+
+        xTextField.setEnabled(false);
+
+        rotateLabel2.setText("Y");
+        rotateLabel2.setEnabled(false);
+
+        yTextField.setEnabled(false);
+
+        rotateLabel3.setText("Angle");
+        rotateLabel3.setEnabled(false);
+
+        angleComboBox.setEditable(true);
+        angleComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "60", "120", "180", "240", "300" }));
+        angleComboBox.setEnabled(false);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -104,32 +141,47 @@ public class IntervalCopyDialog extends javax.swing.JDialog {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(newNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE))
                     .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cropBeginCheckBox)
-                            .add(cropEndCheckBox))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cropBeginLabel1)
-                            .add(cropEndLabel1))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(cropEndTextField)
-                            .add(cropBeginTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cropEndLabel2)
-                            .add(cropBeginLabel2)))
-                    .add(layout.createSequentialGroup()
                         .add(copyButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cancelButton)))
+                        .add(cancelButton))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(cropBeginCheckBox)
+                            .add(cropEndCheckBox)
+                            .add(rotateCheckBox))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(rotateLabel1)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(xTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 44, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(rotateLabel2)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(yTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 44, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(rotateLabel3)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(angleComboBox, 0, 66, Short.MAX_VALUE))
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(cropBeginLabel1)
+                                    .add(cropEndLabel1))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                    .add(cropEndTextField)
+                                    .add(cropBeginTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(cropEndLabel2)
+                                    .add(cropBeginLabel2)))))
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -153,6 +205,15 @@ public class IntervalCopyDialog extends javax.swing.JDialog {
                     .add(cropEndLabel1)
                     .add(cropEndTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(cropEndLabel2))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(rotateCheckBox)
+                    .add(rotateLabel1)
+                    .add(xTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(rotateLabel2)
+                    .add(yTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(rotateLabel3)
+                    .add(angleComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -185,6 +246,9 @@ public class IntervalCopyDialog extends javax.swing.JDialog {
         name = newNameTextField.getText();
         beginCropTime = Integer.parseInt(cropBeginTextField.getText());
         endCropTime = Integer.parseInt(cropEndTextField.getText());
+        rotationX = Double.parseDouble(xTextField.getText());
+        rotationY = Double.parseDouble(yTextField.getText());
+        rotationAngle = Double.parseDouble((String)angleComboBox.getSelectedItem());
         dispose();
     }//GEN-LAST:event_copyButtonActionPerformed
 
@@ -192,6 +256,17 @@ public class IntervalCopyDialog extends javax.swing.JDialog {
         cancelled = true;
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void rotateCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rotateCheckBoxActionPerformed
+        boolean state = rotateCheckBox.isSelected();
+        rotated = state;
+        rotateLabel1.setEnabled(state);
+        xTextField.setEnabled(state);
+        rotateLabel2.setEnabled(state);
+        yTextField.setEnabled(state);
+        rotateLabel3.setEnabled(state);
+        angleComboBox.setEnabled(state);
+    }//GEN-LAST:event_rotateCheckBoxActionPerformed
 
     public String getNewName() {
         return name;
@@ -217,7 +292,24 @@ public class IntervalCopyDialog extends javax.swing.JDialog {
         return cancelled;
     }
 
+    public boolean isRotated() {
+        return rotated;
+    }
+
+    public double getRotationX() {
+        return rotationX;
+    }
+
+    public double getRotationY() {
+        return rotationY;
+    }
+
+    public double getRotationAngle() {
+        return rotationAngle;
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox angleComboBox;
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton copyButton;
     private javax.swing.JCheckBox cropBeginCheckBox;
@@ -232,6 +324,12 @@ public class IntervalCopyDialog extends javax.swing.JDialog {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTextField newNameTextField;
+    private javax.swing.JCheckBox rotateCheckBox;
+    private javax.swing.JLabel rotateLabel1;
+    private javax.swing.JLabel rotateLabel2;
+    private javax.swing.JLabel rotateLabel3;
+    private javax.swing.JTextField xTextField;
+    private javax.swing.JTextField yTextField;
     // End of variables declaration//GEN-END:variables
 
 }

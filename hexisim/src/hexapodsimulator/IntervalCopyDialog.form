@@ -25,7 +25,6 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jSeparator2" alignment="0" pref="364" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -33,31 +32,50 @@
                   </Group>
                   <Component id="jSeparator1" alignment="0" pref="364" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="cropBeginCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="cropEndCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="cropBeginLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="cropEndLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="32767" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="cropEndTextField" max="32767" attributes="1"/>
-                          <Component id="cropBeginTextField" alignment="0" pref="148" max="32767" attributes="1"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="cropEndLabel2" min="-2" max="-2" attributes="0"/>
-                          <Component id="cropBeginLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
                       <Component id="copyButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="cropBeginCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cropEndCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="rotateCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="rotateLabel1" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="xTextField" min="-2" pref="44" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="rotateLabel2" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="yTextField" min="-2" pref="44" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="rotateLabel3" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="angleComboBox" pref="66" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="cropBeginLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cropEndLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="cropEndTextField" max="32767" attributes="1"/>
+                                  <Component id="cropBeginTextField" alignment="0" pref="148" max="32767" attributes="1"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="cropEndLabel2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cropBeginLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                  </Group>
+                  <Component id="jSeparator2" alignment="0" pref="364" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -86,6 +104,16 @@
                   <Component id="cropEndLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cropEndTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cropEndLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="rotateCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="rotateLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="xTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="rotateLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="yTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="rotateLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="angleComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jSeparator2" min="-2" max="-2" attributes="0"/>
@@ -176,6 +204,57 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelButtonActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="rotateCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Rotate"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rotateCheckBoxActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="rotateLabel1">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="X"/>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="xTextField">
+      <Properties>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="rotateLabel2">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Y"/>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="yTextField">
+      <Properties>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="rotateLabel3">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Angle"/>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="angleComboBox">
+      <Properties>
+        <Property name="editable" type="boolean" value="true"/>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="5">
+            <StringItem index="0" value="60"/>
+            <StringItem index="1" value="120"/>
+            <StringItem index="2" value="180"/>
+            <StringItem index="3" value="240"/>
+            <StringItem index="4" value="300"/>
+          </StringArray>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

@@ -42,9 +42,9 @@ public class SequenceEditorDialog extends javax.swing.JDialog {
         public void setValueAt(Object value, int row, int col) {
             //TODO check whether entered values are in the valid range
             double valueD = Double.parseDouble((String) value);
-            if ((valueCount == 1 && (valueD < -45 || valueD > 45))
-                    || (valueCount == 2 && col == 1 && (valueD < -63.3 || valueD > 102.8))
-                    || (valueCount == 2 && col == 2 && (valueD < -24 || valueD > 149.9))) {
+            if ((valueCount == 1 && !GLRendererCoxa.checkAngle(valueD))
+                    || (valueCount == 2 && col == 1 && !GLRendererFemurTibia.checkCoxaFemurAngle(valueD))
+                    || (valueCount == 2 && col == 2 && !GLRendererFemurTibia.checkFemurTibiaAngle(valueD))) {
                 return;
             }
 

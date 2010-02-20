@@ -1776,7 +1776,7 @@ public class HexapodSimulator extends JFrame {
             ftSequence.clean();
             cSequence.clean();
             if (properties.normalizeInput) {
-                ftSequence.normalize();
+                /*ftSequence.normalize();*/ ftSequence.normalize(0);
                 //ftSequence.addContent(GLRendererFemurTibia.angle[0], GLRendererFemurTibia.angle[1]); // add the last value
                 ftSequence.clean();
                 cSequence.normalize();
@@ -1947,7 +1947,7 @@ public class HexapodSimulator extends JFrame {
         if (sequenceEditorDialog.isCancelled()) {
             return;
         }
-        
+
         sequenceVector.remove(index);
         sequenceVector.add(index, sequenceEditorDialog.getEditedSequence());
 
@@ -1991,7 +1991,32 @@ public class HexapodSimulator extends JFrame {
             combSecondSequence = getSequenceByName("combft_" + sequenceVector.get(index).getName().substring(6));
         }
 
-        IntervalCopyDialog intervalCopyDialog = new IntervalCopyDialog(this, name, sequence.getTime());
+        double deltaX = 0, deltaY = 0;
+        if (sequenceVector.get(index).getName().split("_")[0].equals("combc")) {
+            double b = GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(combSecondSequence.getAngle(0)[0]));
+            b += GLRendererFemurTibia.b2 * Math.cos(Math.toRadians(combSecondSequence.getAngle(0)[0] + combSecondSequence.getAngle(0)[1]));
+            double bx1 = b * Math.cos(Math.toRadians(90 - sequence.getAngle(0)[0]));
+            double by1 = 0.1 + b * Math.sin(Math.toRadians(90 - sequence.getAngle(0)[0]));
+            b = GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(combSecondSequence.getAngle(combSecondSequence.getLength() - 1)[0]));
+            b += GLRendererFemurTibia.b2 * Math.cos(Math.toRadians(combSecondSequence.getAngle(combSecondSequence.getLength() - 1)[0] + combSecondSequence.getAngle(combSecondSequence.getLength() - 1)[1]));
+            double bx2 = b * Math.cos(Math.toRadians(90 - sequence.getAngle(sequence.getLength() - 1)[0]));
+            double by2 = 0.1 + b * Math.sin(Math.toRadians(90 - sequence.getAngle(sequence.getLength() - 1)[0]));
+            deltaX = (bx2 + bx1) / 2;
+            deltaY = (by2 + by1) / 2;
+        } else if (sequenceVector.get(index).getName().split("_")[0].equals("combft")) {
+            double b = GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(sequence.getAngle(0)[0]));
+            b += GLRendererFemurTibia.b2 * Math.cos(Math.toRadians(sequence.getAngle(0)[0] + sequence.getAngle(0)[1]));
+            double bx1 = b * Math.cos(Math.toRadians(90 - combSecondSequence.getAngle(0)[0]));
+            double by1 = 0.1 + b * Math.sin(Math.toRadians(90 - combSecondSequence.getAngle(0)[0]));
+            b = GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(sequence.getAngle(sequence.getLength() - 1)[0]));
+            b += GLRendererFemurTibia.b2 * Math.cos(Math.toRadians(sequence.getAngle(sequence.getLength() - 1)[0] + sequence.getAngle(combSecondSequence.getLength() - 1)[1]));
+            double bx2 = b * Math.cos(Math.toRadians(90 - combSecondSequence.getAngle(combSecondSequence.getLength() - 1)[0]));
+            double by2 = 0.1 + b * Math.sin(Math.toRadians(90 - combSecondSequence.getAngle(combSecondSequence.getLength() - 1)[0]));
+            deltaX = (bx2 + bx1) / 2;
+            deltaY = (by2 + by1) / 2;
+        }
+
+        IntervalCopyDialog intervalCopyDialog = new IntervalCopyDialog(this, name, sequence.getTime(), deltaX, deltaY);
         intervalCopyDialog.setVisible(true);
         if (intervalCopyDialog.isCancelled()
                 || getSequenceByName(prefix + "_" + intervalCopyDialog.getNewName()) != null
@@ -2002,12 +2027,51 @@ public class HexapodSimulator extends JFrame {
         HexiSequenz newCombSecondSequence = null;
         newSequence = (HexiSequenz) DeepObjectCopy.getDeepCopy(sequence);
         newSequence.setName(prefix + "_" + intervalCopyDialog.getNewName());
-        sequenceVector.add(newSequence);
         if (combSecondSequence != null) {
             newCombSecondSequence = (HexiSequenz) DeepObjectCopy.getDeepCopy(combSecondSequence);
-            String combPrefix = (prefix.equals("combft")) ? "combc" : "combft";
-            newCombSecondSequence.setName(combPrefix + "_" + intervalCopyDialog.getNewName());
-            sequenceVector.add(newCombSecondSequence);
+        }
+
+        if (combSecondSequence != null && intervalCopyDialog.isRotated()) {
+            deltaX = intervalCopyDialog.getRotationX();
+            deltaY = intervalCopyDialog.getRotationY();
+            HexiSequenz coxaSequenz = null;
+            HexiSequenz ftSequenz = null;
+            HexiSequenz tempSequenz = new HexiSequenz();
+            if (sequenceVector.get(index).getName().split("_")[0].equals("combc")) {
+                ftSequenz = newCombSecondSequence;
+                coxaSequenz = newSequence;
+            } else if (sequenceVector.get(index).getName().split("_")[0].equals("combft")) {
+                ftSequenz = newSequence;
+                coxaSequenz = newCombSecondSequence;
+            }
+            for (int i = 0; i < coxaSequenz.getLength(); i++) {
+                SuperSeq tempSuperSeq = new SuperSeq();
+                tempSuperSeq.addSeq(ftSequenz, 0, 0, 0);
+                double b = GLRendererFemurTibia.b1 * Math.cos(Math.toRadians(tempSuperSeq.getSingleElementAtTime(ftSequenz.getTime() * i / ftSequenz.getLength(), 0, 1)));
+                b += GLRendererFemurTibia.b2 * Math.cos(Math.toRadians(tempSuperSeq.getSingleElementAtTime(ftSequenz.getTime() * i / ftSequenz.getLength(), 0, 1) + tempSuperSeq.getSingleElementAtTime(ftSequenz.getTime() * i / ftSequenz.getLength(), 0, 2)));
+                double bx1 = b * Math.cos(Math.toRadians(90 - coxaSequenz.getAngle(i)[0]));
+                double by1 = 0.1 + b * Math.sin(Math.toRadians(90 - coxaSequenz.getAngle(i)[0]));
+                //GLRendererCoxa.addPoint(bx1 + 1, -by1);
+                double l = Math.hypot(deltaX - bx1, deltaY - by1);
+                double bxnew = deltaX - Math.cos(Math.toRadians(intervalCopyDialog.getRotationAngle()) + Math.atan2(deltaY - by1, deltaX - bx1)) * l;
+                double bynew = deltaY + Math.sin(Math.toRadians(intervalCopyDialog.getRotationAngle()) + Math.atan2(deltaY - by1, deltaX - bx1)) * l;
+                //GLRendererCoxa.addPoint(bxnew + 1, -bynew);
+                b = Math.hypot(bxnew, bynew - 0.1);
+                coxaSequenz.setAngle(i, new double[]{Math.toDegrees(Math.atan2(-(bynew - 0.1), bxnew)) + 90});
+                GLRendererFemurTibia.moveAnglesToXY(b + 0.8, GLRendererFemurTibia.getY() + 1);
+                tempSequenz.addContent(GLRendererFemurTibia.angle.clone());
+                if(!GLRendererCoxa.checkAngle(coxaSequenz.getAngle(i)[0]) || !GLRendererFemurTibia.checkAngles(tempSequenz.getAngle(i))) {
+                    JOptionPane.showMessageDialog(this, "One of the angles is out of the valid range!");
+                    return;
+                }
+            }
+            tempSequenz.setName(ftSequenz.getName());
+            tempSequenz.setTime(ftSequenz.getTime());
+            if (sequenceVector.get(index).getName().split("_")[0].equals("combc")) {
+                newCombSecondSequence = tempSequenz;
+            } else if (sequenceVector.get(index).getName().split("_")[0].equals("combft")) {
+                newSequence = tempSequenz;
+            }
         }
 
         if (intervalCopyDialog.isEndCropped()) {
@@ -2050,6 +2114,14 @@ public class HexapodSimulator extends JFrame {
                     newCombSecondSequence.addContent(tempSuperSeq.getSingleElementAtTime(i, 0, 1), tempSuperSeq.getSingleElementAtTime(i, 0, 2));
                 }
             }
+        }
+
+        sequenceVector.add(newSequence);
+        if (combSecondSequence != null) {
+            //newCombSecondSequence = (HexiSequenz) DeepObjectCopy.getDeepCopy(combSecondSequence);
+            String combPrefix = (prefix.equals("combft")) ? "combc" : "combft";
+            newCombSecondSequence.setName(combPrefix + "_" + intervalCopyDialog.getNewName());
+            sequenceVector.add(newCombSecondSequence);
         }
 
         ListModel items = sequenceList.getModel();

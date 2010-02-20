@@ -2,6 +2,8 @@ package hexapodsimulator;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
+import java.util.Vector;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
@@ -18,6 +20,12 @@ public class GLRendererCoxa extends MouseAdapter implements GLEventListener {
 
     public static boolean holdX;
     public static boolean holdY;
+
+    private static Vector<Point2D> points = new Vector<Point2D>();
+
+    public static void addPoint(double x, double y) {
+        points.add(new Point2D.Double(x, y));
+    }
 
     @Override
     public void mouseDragged(MouseEvent e) {
@@ -42,7 +50,7 @@ public class GLRendererCoxa extends MouseAdapter implements GLEventListener {
         }
         System.out.println(angle);
 
-        if (angle < -45 || angle > 45) {    // angle is out of range
+        if (!checkAngle(angle)) {    // angle is out of range
             angle = angle > 0 ? 45 : -45;
         }
 
@@ -50,6 +58,15 @@ public class GLRendererCoxa extends MouseAdapter implements GLEventListener {
             double l = 0.8+Math.hypot(mx, my - 0.1);
             GLRendererFemurTibia.moveAnglesToXY(l, GLRendererFemurTibia.getY() + 1);
         }
+    }
+
+    /**
+     * Checks if the specified angle is in the valid range
+     * @param ang The angle to check
+     * @return true if the angle is valid, otherwise false
+     */
+    public static boolean checkAngle(double ang) {
+        return (ang >= -45 && ang <= 45);
     }
 
     public void init(GLAutoDrawable drawable) {
@@ -104,6 +121,13 @@ public class GLRendererCoxa extends MouseAdapter implements GLEventListener {
         gl.glColor3f(1.0f, 1.0f, 1.0f);
         gl.glVertex2d(joint[0][0], joint[0][1]);
         gl.glVertex2d(joint[1][0], joint[1][1]);
+        gl.glEnd();
+
+        gl.glBegin(GL.GL_POINTS);
+        gl.glColor3f(1.0f, 0.0f, 0.0f);
+        for (int i = 0; i < points.size(); i++) {
+            gl.glVertex2d(points.elementAt(i).getX(), points.elementAt(i).getY());
+        }
         gl.glEnd();
 
         // Flush all drawing operations to the graphics card

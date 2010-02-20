@@ -7,7 +7,6 @@ import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLJPanel;
 import javax.media.opengl.glu.GLU;
-import javax.swing.JLabel;
 
 /**
  * GLRenderer.java <BR>
@@ -37,7 +36,7 @@ public class GLRendererFemurTibia extends MouseAdapter implements GLEventListene
         else
             moveAnglesToXY(x3, y3);
 
-}
+    }
 
     public static void moveAnglesToXY(double x3, double y3){
         double xStart = 0.8;
@@ -66,13 +65,10 @@ public class GLRendererFemurTibia extends MouseAdapter implements GLEventListene
         }
 
         //Maybe it's better to treat both angles eqally (?)
-        double[] anglePwmValue = new double[2];
-        anglePwmValue[0] = Math.toRadians(-angle[0])*1024 + 2145;
-        anglePwmValue[1] = Math.toRadians(-angle[1])*1024 + 2680;
-        /*if (angle[0] < (-72.9 + 30) || angle[0] > (93.3 + 30)) {*/ if(anglePwmValue[0] > 3277 || anglePwmValue[0] < 306) {
+        if(!checkCoxaFemurAngle(angle[0])) {
             angle[0] = oldAngle[0];
         }
-        /*if (angle[1] < (-90 + 59.9) || angle[1] > (83.9 + 59.9)) {*/ if(anglePwmValue[1] > 3109 || anglePwmValue[1] < 0 /*|| anglePwmValue[0] > 3277 || anglePwmValue[0] < 306*/) {
+        if(!checkFemurTibiaAngle(angle[1])) {
             //angle[0] = oldAngle[0];
             angle[1] = oldAngle[1];
             //angle[0] = 90 - Math.toDegrees(Math.atan((x3 - xStart) / (y3 - yStart))) - (180 - angle[1]) / 2;
@@ -87,6 +83,33 @@ public class GLRendererFemurTibia extends MouseAdapter implements GLEventListene
 
     public static double getY(){
         return b1 * Math.sin(Math.toRadians(angle[0])) +  b2 * Math.sin(Math.toRadians(angle[0] + angle[1]));
+    }
+
+    /**
+     * Checks if the specified angles are in the valid range
+     * @param ang An array of the two angles to check
+     * @return true if the angle is valid, otherwise false
+     */
+    public static boolean checkAngles(double[] ang) {
+        return checkCoxaFemurAngle(ang[0]) && checkFemurTibiaAngle(ang[1]);
+    }
+
+    /**
+     * Checks if the specified angle between coxa and femur is in the valid range
+     * @param ang The angle to check
+     * @return true if the angle is valid, otherwise false
+     */
+    public static boolean checkCoxaFemurAngle(double ang) {
+        return (ang >= -63.3 && ang <= 102.8);
+    }
+
+    /**
+     * Checks if the specified angle between femur and tibia is in the valid range
+     * @param ang The angle to check
+     * @return true if the angle is valid, otherwise false
+     */
+    public static boolean checkFemurTibiaAngle(double ang) {
+        return (ang >= -24 && ang <= 149.9);
     }
 
     public void init(GLAutoDrawable drawable) {

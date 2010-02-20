@@ -66,6 +66,10 @@ public class HexiSequenz implements Serializable {
         return angle.elementAt(position);
     }
 
+    public void setAngle(int position, double[] angles) {
+        angle.setElementAt(angles, position);
+    }
+
     /**
      *
      * @return die Zeitdauer der Sequenz
