@@ -678,6 +678,8 @@ public class HexapodSimulator extends JFrame {
 
                     tempInterval = null;
                     tempCombinedIntervals = null;
+                    tempSequence = new HexiSequenz();
+                    tempCombinedSequences = new Vector<HexiSequenz>();
                 }
             }
 
@@ -748,6 +750,8 @@ public class HexapodSimulator extends JFrame {
                     tempRow = null;
                     tempInterval = null;
                     tempCombinedIntervals = null;
+                    tempSequence = new HexiSequenz();
+                    tempCombinedSequences = new Vector<HexiSequenz>();
                 }
             }
 
